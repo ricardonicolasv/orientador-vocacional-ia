@@ -18,6 +18,7 @@
     </x-slot>
 
     @php
+    $today = now()->format('Y-m-d');
     $routeLabels = [
     'universidad' => 'Universitaria',
     'tecnico-profesional' => 'Técnico-profesional',
@@ -46,7 +47,17 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            @if ($errors->any())
+            <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                <p class="font-semibold">Revisa los filtros ingresados:</p>
 
+                <ul class="mt-2 list-disc pl-5 text-sm">
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
             {{-- Tarjetas principales --}}
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl p-6 border border-gray-100">
@@ -196,26 +207,96 @@
                                 Estudiantes registrados
                             </h3>
                             <p class="text-sm text-gray-500">
-                                Revisa el detalle de cada estudiante y sus conversaciones vocacionales.
+                                Revisa el detalle de cada estudiante y filtra por curso, ruta, claridad o fecha.
                             </p>
                         </div>
 
-                        <form method="GET" action="{{ route('orientador.dashboard') }}" class="flex flex-col md:flex-row gap-3">
-                            <input type="text" name="search" value="{{ $search }}"
-                                placeholder="Buscar por nombre, curso o colegio..."
-                                class="w-full md:w-80 rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                        <form method="GET" action="{{ route('orientador.dashboard') }}" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                        Buscar
+                                    </label>
+                                    <input type="text" name="search" value="{{ $search }}"
+                                        placeholder="Nombre, curso o colegio..."
+                                        class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                                </div>
 
-                            <button type="submit"
-                                class="rounded-xl bg-green-700 px-5 py-2.5 text-white font-semibold hover:bg-green-800">
-                                Buscar
-                            </button>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                        Curso
+                                    </label>
+                                    <select name="course"
+                                        class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                                        <option value="">Todos los cursos</option>
+                                        @foreach($availableCourses as $availableCourse)
+                                        <option value="{{ $availableCourse }}" @selected($course===$availableCourse)>
+                                            {{ $availableCourse }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                            @if($search)
-                            <a href="{{ route('orientador.dashboard') }}"
-                                class="rounded-xl border border-gray-300 px-5 py-2.5 text-gray-700 font-semibold hover:bg-gray-50 text-center">
-                                Limpiar
-                            </a>
-                            @endif
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                        Ruta vocacional
+                                    </label>
+                                    <select name="route"
+                                        class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                                        <option value="">Todas las rutas</option>
+                                        @foreach($routeLabels as $value => $label)
+                                        <option value="{{ $value }}" @selected($route===$value)>
+                                            {{ $label }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                        Claridad vocacional
+                                    </label>
+                                    <select name="clarity"
+                                        class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                                        <option value="">Todos los niveles</option>
+                                        @foreach($clarityLabels as $value => $label)
+                                        <option value="{{ $value }}" @selected($clarity===$value)>
+                                            {{ $label }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                        Desde
+                                    </label>
+                                    <input type="date" name="date_from" value="{{ $dateFrom }}" max="{{ $today }}"
+                                        class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                        Hasta
+                                    </label>
+                                    <input type="date" name="date_to" value="{{ $dateTo }}" max="{{ $today }}"
+                                        class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end">
+                                <button type="submit"
+                                    class="rounded-xl bg-green-700 px-5 py-2.5 text-white font-semibold hover:bg-green-800">
+                                    Aplicar filtros
+                                </button>
+
+                                @if($search || $course || $route || $clarity || $dateFrom || $dateTo)
+                                <a href="{{ route('orientador.dashboard') }}"
+                                    class="rounded-xl border border-gray-300 px-5 py-2.5 text-gray-700 font-semibold hover:bg-gray-50 text-center">
+                                    Limpiar filtros
+                                </a>
+                                @endif
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -296,7 +377,7 @@
                             @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                                    No hay estudiantes registrados.
+                                    No se encontraron estudiantes con los filtros aplicados.
                                 </td>
                             </tr>
                             @endforelse
@@ -310,4 +391,42 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateFrom = document.querySelector('input[name="date_from"]');
+            const dateTo = document.querySelector('input[name="date_to"]');
+
+            if (!dateFrom || !dateTo) {
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+
+            dateFrom.setAttribute('max', today);
+            dateTo.setAttribute('max', today);
+
+            function syncDateLimits() {
+                if (dateFrom.value) {
+                    dateTo.setAttribute('min', dateFrom.value);
+                } else {
+                    dateTo.removeAttribute('min');
+                }
+
+                if (dateTo.value) {
+                    dateFrom.setAttribute('max', dateTo.value < today ? dateTo.value : today);
+                } else {
+                    dateFrom.setAttribute('max', today);
+                }
+
+                if (dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) {
+                    dateTo.value = dateFrom.value;
+                }
+            }
+
+            dateFrom.addEventListener('change', syncDateLimits);
+            dateTo.addEventListener('change', syncDateLimits);
+
+            syncDateLimits();
+        });
+    </script>
 </x-app-layout>
