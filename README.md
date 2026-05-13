@@ -684,7 +684,7 @@ No reemplaza la entrevista con el orientador del colegio ni la revisión directa
 
 Las fechas, requisitos, beneficios, ponderaciones, procesos de admisión, carreras disponibles, sedes, aranceles y condiciones institucionales pueden cambiar, por lo que siempre deben verificarse en las páginas oficiales correspondientes.
 
-##👨‍💻 Autor
+## 👨‍💻 Autor
 
 Proyecto desarrollado por:
 
@@ -692,7 +692,7 @@ Ricardo Vidal
 Ingeniería en Informática
 GitHub: @ricardonicolasv
 
-##📄 Licencia
+## 📄 Licencia
 
 Proyecto desarrollado con fines académicos y de prototipado.
 
