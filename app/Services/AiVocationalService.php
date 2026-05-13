@@ -10,6 +10,10 @@ class AiVocationalService
     {
         $message = $this->normalize($studentMessage);
 
+        if ($this->isCorrectionAboutDifficulty($message)) {
+            return $this->difficultyCorrectionResponse($conversation);
+        }
+
         $detectedAreas = $this->detectInterestAreas($message);
 
         if (empty($detectedAreas)) {
@@ -33,8 +37,10 @@ class AiVocationalService
     {
         $areas = [];
 
+        $negativeContext = $this->detectNegativeContext($message);
+
         $keywords = [
-            'Tecnología, computación e informática' => [
+            'tecnologia' => [
                 'computador',
                 'computadores',
                 'tecnologia',
@@ -43,6 +49,7 @@ class AiVocationalService
                 'software',
                 'hardware',
                 'pc',
+                'videojuegos',
                 'datos',
                 'robotica',
                 'inteligencia artificial',
@@ -71,20 +78,40 @@ class AiVocationalService
                 'animales',
                 'naturaleza',
             ],
+            'arte_musica_cultura' => [
+                'arte',
+                'artes',
+                'musica',
+                'musical',
+                'conciertos',
+                'museos',
+                'dibujo',
+                'pintura',
+                'diseno',
+                'diseño',
+                'cultura',
+                'teatro',
+                'cine',
+                'fotografia',
+                'fotografía',
+                'danza',
+                'manualidades',
+                'creatividad',
+            ],
             'social_personas' => [
                 'personas',
                 'ayudar',
                 'social',
                 'psicologia',
-                'trabajo social',
-                'comunicacion',
-                'atender',
-                'orientar',
                 'comportamiento humano',
                 'trastornos mentales',
                 'salud mental',
                 'filosofia',
                 'lenguaje',
+                'trabajo social',
+                'comunicacion',
+                'atender',
+                'orientar',
             ],
             'educacion' => [
                 'educacion',
@@ -92,6 +119,7 @@ class AiVocationalService
                 'profesora',
                 'pedagogia',
                 'ensenar',
+                'enseñar',
                 'niños',
                 'jovenes',
                 'colegio',
@@ -123,6 +151,10 @@ class AiVocationalService
         foreach ($keywords as $area => $words) {
             foreach ($words as $word) {
                 if (str_contains($message, $word)) {
+                    if ($this->shouldIgnoreAreaBecauseOfDifficulty($area, $negativeContext)) {
+                        continue;
+                    }
+
                     $areas[] = $area;
                     break;
                 }
@@ -130,6 +162,128 @@ class AiVocationalService
         }
 
         return array_unique($areas);
+    }
+
+    private function detectNegativeContext(string $message): array
+    {
+        $negativeContext = [];
+
+        $difficultyPatterns = [
+            'matematica_fisica' => [
+                'me cuesta la matematica',
+                'me cuestan las matematicas',
+                'me cuesta matematica',
+                'me cuesta matematicas',
+                'me cuesta mucho la matematica',
+                'me cuesta mucho matematica',
+                'me cuesta mucho las matematicas',
+                'me cuesta mucho matematicas',
+                'se me hace dificil matematica',
+                'se me hacen dificiles las matematicas',
+                'no me gusta matematica',
+                'no me gustan las matematicas',
+                'odio matematica',
+                'odio matematicas',
+                'me cuesta fisica',
+                'me cuesta la fisica',
+                'me cuesta mucho fisica',
+                'me cuesta mucho la fisica',
+                'se me hace dificil fisica',
+                'no me gusta fisica',
+                'odio fisica',
+            ],
+            'tecnologia' => [
+                'no me gusta la tecnologia',
+                'no me gusta tecnologia',
+                'me cuesta programar',
+                'no me gusta programar',
+                'me cuesta informatica',
+                'no me gusta informatica',
+            ],
+            'biologia_salud' => [
+                'no me gusta biologia',
+                'me cuesta biologia',
+                'no me gusta salud',
+                'no me interesa salud',
+            ],
+            'arte_musica_cultura' => [
+                'no me gusta el arte',
+                'no me gusta arte',
+                'no me gusta musica',
+                'no me interesa musica',
+                'no me interesa el arte',
+            ],
+            'educacion' => [
+                'no me gusta ensenar',
+                'no me gusta enseñar',
+                'no me interesa ensenar',
+                'no me interesa enseñar',
+                'no quiero ser profesor',
+                'no quiero ser profesora',
+                'no me gusta pedagogia',
+            ],
+        ];
+
+        foreach ($difficultyPatterns as $area => $patterns) {
+            foreach ($patterns as $pattern) {
+                if (str_contains($message, $pattern)) {
+                    $negativeContext[] = $area;
+                    break;
+                }
+            }
+        }
+
+        return array_unique($negativeContext);
+    }
+
+    private function shouldIgnoreAreaBecauseOfDifficulty(string $area, array $negativeContext): bool
+    {
+        return in_array($area, $negativeContext, true);
+    }
+
+    private function isCorrectionAboutDifficulty(string $message): bool
+    {
+        $patterns = [
+            'dije que me cuesta',
+            'dije que me cuestan',
+            'te dije que me cuesta',
+            'te dije que me cuestan',
+            'me cuesta',
+            'me cuestan',
+            'se me hace dificil',
+            'se me hacen dificiles',
+            'no me gusta',
+            'no me gustan',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (str_contains($message, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function difficultyCorrectionResponse(Conversation $conversation): string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+
+        return "Tienes razón, {$studentName}. Gracias por corregirme.
+
+Si matemáticas o física se te hacen difíciles, no debería tomarlas como áreas principales de interés. En ese caso conviene priorizar lo que sí mencionaste como gusto, interés o actividad que disfrutas.
+
+Por lo que has contado, podríamos explorar mejor áreas como:
+- Arte, música, diseño y creatividad
+- Humanidades, lenguaje o comunicación
+- Pedagogía en artes, música, lenguaje o educación básica
+- Psicología, orientación o áreas sociales si te interesa comprender a las personas
+- Gestión cultural, producción de eventos o comunicación audiovisual
+
+Para orientarte mejor:
+1. ¿Te gustaría dedicarte a crear, enseñar, comunicar o trabajar en actividades culturales?
+2. ¿Te interesa más la música, el arte visual, el diseño, el teatro, la escritura o la producción de eventos?
+3. ¿Te ves trabajando con niños, jóvenes, público general o de forma más independiente?";
     }
 
     private function buildVocationalResponse(Conversation $conversation, array $areas): string
@@ -144,17 +298,11 @@ class AiVocationalService
         }
 
         $response .= "\n";
-
         $response .= $this->getRouteSpecificIntro($route);
-
         $response .= "\n\n";
-
         $response .= $this->getCareerSuggestions($areas);
-
         $response .= "\n\n";
-
         $response .= $this->getFollowUpQuestions($areas, $route);
-
         $response .= "\n\nRecuerda: esto es una orientación inicial. Antes de decidir, conviene revisar mallas, requisitos de admisión, acreditación, campo laboral y conversar con el orientador del colegio.";
 
         return $response;
@@ -166,6 +314,7 @@ class AiVocationalService
             'tecnologia' => 'Tecnología, computación e informática',
             'matematica_fisica' => 'Matemáticas, física e ingeniería',
             'biologia_salud' => 'Biología, salud y ciencias',
+            'arte_musica_cultura' => 'Arte, música, cultura y creatividad',
             'social_personas' => 'Trabajo con personas y área social',
             'educacion' => 'Educación y pedagogía',
             'seguridad_ffaa' => 'Fuerzas Armadas, Orden y Seguridad Pública',
@@ -199,12 +348,16 @@ class AiVocationalService
             $suggestions[] = "Por el lado de biología y salud podrías explorar:\n- Medicina\n- Enfermería\n- Tecnología Médica\n- Kinesiología\n- Bioquímica\n- Biotecnología\n- Técnico en Enfermería\n- Laboratorio Clínico";
         }
 
+        if (in_array('arte_musica_cultura', $areas)) {
+            $suggestions[] = "Por el lado artístico, cultural y creativo podrías explorar:\n- Diseño Gráfico\n- Diseño Digital\n- Diseño de Vestuario\n- Artes Visuales\n- Pedagogía en Artes Visuales\n- Pedagogía en Música\n- Producción Musical\n- Comunicación Audiovisual\n- Gestión Cultural\n- Teatro o Artes Escénicas";
+        }
+
         if (in_array('social_personas', $areas)) {
             $suggestions[] = "Por el lado social podrías explorar:\n- Psicología\n- Trabajo Social\n- Terapia Ocupacional\n- Administración Pública\n- Sociología\n- Orientación o áreas de apoyo comunitario";
         }
 
         if (in_array('educacion', $areas)) {
-            $suggestions[] = "Por el lado educativo podrías explorar:\n- Pedagogía en Matemática\n- Pedagogía en Ciencias\n- Pedagogía en Educación Básica\n- Educación Diferencial\n- Pedagogía en Inglés\n- Educación Parvularia";
+            $suggestions[] = "Por el lado educativo podrías explorar:\n- Pedagogía en Educación Básica\n- Educación Diferencial\n- Pedagogía en Lenguaje\n- Pedagogía en Artes Visuales\n- Pedagogía en Música\n- Pedagogía en Inglés\n- Educación Parvularia";
         }
 
         if (in_array('seguridad_ffaa', $areas)) {
@@ -236,6 +389,10 @@ class AiVocationalService
 
         if (in_array('biologia_salud', $areas)) {
             $questions[] = "¿Te interesa más atender personas, trabajar en laboratorio o investigar temas científicos?";
+        }
+
+        if (in_array('arte_musica_cultura', $areas)) {
+            $questions[] = "¿Te interesa más crear, interpretar, diseñar, producir eventos, enseñar arte/música o trabajar en gestión cultural?";
         }
 
         if (in_array('social_personas', $areas)) {
