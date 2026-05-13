@@ -9,7 +9,19 @@
                     Seguimiento general de estudiantes, conversaciones y reportes vocacionales.
                 </p>
                 <p class="text-xs text-purple-700 mt-2 font-semibold">
-                    Modo IA activo: {{ config('ai.mode') === 'openai' ? 'OpenAI' : 'Local' }}
+                    Modo IA activo:
+                    @switch(config('ai.mode'))
+                    @case('openai')
+                    OpenAI
+                    @break
+
+                    @case('groq')
+                    Groq
+                    @break
+
+                    @default
+                    Local
+                    @endswitch
                 </p>
             </div>
 
@@ -138,9 +150,25 @@
                     </div>
 
                     <div class="space-y-4">
+                        @if($studentsWithoutReports > 0)
+                        <div>
+                            <div class="flex justify-between items-center text-sm mb-1">
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700">
+                                    Sin reporte
+                                </span>
+                                <span class="text-gray-500">{{ $studentsWithoutReports }}</span>
+                            </div>
+
+                            <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
+                                <div class="h-2 rounded-full bg-gray-400"
+                                    style="width: {{ round(($studentsWithoutReports / max($totalStudents, 1)) * 100) }}%">
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                         @forelse($clarityStats as $clarityStat)
                         @php
-                        $percentage = round(($clarityStat->total / $maxClarityTotal) * 100);
+                        $percentage = round(($clarityStat->total / max($totalStudents, 1)) * 100);
                         $label = $clarityLabels[$clarityStat->clarity_level] ?? ucfirst($clarityStat->clarity_level);
                         $class = $clarityClasses[$clarityStat->clarity_level] ?? 'bg-gray-100 text-gray-700';
                         @endphp

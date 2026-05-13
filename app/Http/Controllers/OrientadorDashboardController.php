@@ -110,11 +110,17 @@ class OrientadorDashboardController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        $clarityStats = VocationalReport::select('clarity_level', DB::raw('COUNT(*) as total'))
+        $clarityStats = VocationalReport::select('clarity_level', DB::raw('COUNT(DISTINCT student_id) as total'))
             ->whereIn('student_id', $filteredStudentIds)
             ->groupBy('clarity_level')
             ->orderBy('clarity_level')
             ->get();
+
+        $studentsWithReports = VocationalReport::whereIn('student_id', $filteredStudentIds)
+            ->distinct('student_id')
+            ->count('student_id');
+
+        $studentsWithoutReports = max($totalStudents - $studentsWithReports, 0);
 
         $courseStats = Student::select('course', DB::raw('COUNT(*) as total'))
             ->whereIn('id', $filteredStudentIds)
@@ -161,7 +167,8 @@ class OrientadorDashboardController extends Controller
             'routesStats',
             'clarityStats',
             'courseStats',
-            'availableCourses'
+            'availableCourses',
+            'studentsWithoutReports'
         ));
     }
 
