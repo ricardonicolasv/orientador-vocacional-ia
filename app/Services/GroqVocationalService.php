@@ -10,6 +10,12 @@ class GroqVocationalService
 {
     public function generateResponse(Conversation $conversation, string $studentMessage): string
     {
+        $normalizedMessage = $this->normalize($studentMessage);
+
+        if ($this->isAdmissionRequirementsQuestion($normalizedMessage)) {
+            return $this->safeAdmissionRequirementsResponse($conversation);
+        }
+
         $apiKey = config('ai.groq.api_key');
         $model = config('ai.groq.model');
 
@@ -25,7 +31,7 @@ class GroqVocationalService
                 ->post('https://api.groq.com/openai/v1/chat/completions', [
                     'model' => $model,
                     'messages' => $this->buildMessages($conversation, $studentMessage),
-                    'temperature' => 0.25,
+                    'temperature' => 0.2,
                     'max_tokens' => 700,
                 ]);
 
@@ -51,6 +57,86 @@ class GroqVocationalService
 
             return 'Ocurrió un problema al conectar con la IA. Intenta nuevamente más tarde.';
         }
+    }
+
+    private function normalize(string $text): string
+    {
+        $text = mb_strtolower($text);
+
+        return str_replace(
+            ['á', 'é', 'í', 'ó', 'ú', 'ñ'],
+            ['a', 'e', 'i', 'o', 'u', 'n'],
+            $text
+        );
+    }
+
+    private function isAdmissionRequirementsQuestion(string $message): bool
+    {
+        $hasAdmissionIntent =
+            str_contains($message, 'que necesito para entrar') ||
+            str_contains($message, 'requisitos para entrar') ||
+            str_contains($message, 'requisitos de admision') ||
+            str_contains($message, 'como entro') ||
+            str_contains($message, 'como puedo entrar') ||
+            str_contains($message, 'puntaje') ||
+            str_contains($message, 'ponderacion') ||
+            str_contains($message, 'paes') ||
+            str_contains($message, 'nem') ||
+            str_contains($message, 'ranking');
+
+        $hasInstitutionIntent =
+            str_contains($message, 'universidad') ||
+            str_contains($message, 'udec') ||
+            str_contains($message, 'universidad de concepcion') ||
+            str_contains($message, 'instituto') ||
+            str_contains($message, 'cft');
+
+        return $hasAdmissionIntent && $hasInstitutionIntent;
+    }
+
+    private function safeAdmissionRequirementsResponse(Conversation $conversation): string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+
+        return "Buena pregunta, {$studentName}. Para saber qué necesitas para entrar a esa carrera, lo correcto es revisar información oficial y actualizada.
+
+En Chile, la admisión universitaria suele considerar:
+- PAES
+- NEM
+- Ranking
+- Ponderaciones definidas por cada carrera e institución
+- Vacantes
+- Puntaje de corte referencial, cuando esté disponible
+- Requisitos propios publicados oficialmente por la universidad, si existen
+
+No conviene asumir promedios mínimos, puntajes o requisitos especiales sin revisar la ficha oficial, porque pueden cambiar según el año, la carrera y la institución.
+
+Además, habría que confirmar el nombre exacto de la carrera. A veces una carrera relacionada con tecnología puede aparecer como:
+- Ingeniería Civil Informática
+- Ingeniería en Informática
+- Ingeniería Civil en Computación
+- Ciencia de Datos
+- Ingeniería en Computación
+- Otra carrera afín
+
+Te recomiendo revisar:
+- Sitio oficial de admisión de la Universidad de Concepción
+- DEMRE
+- Acceso Educación Superior Mineduc
+- Mi Futuro Mineduc
+
+Para avanzar, podrías buscar estos datos:
+1. Nombre exacto de la carrera.
+2. Sede donde se imparte.
+3. Duración.
+4. Malla curricular.
+5. Ponderaciones PAES, NEM y Ranking.
+6. Vacantes.
+7. Puntaje de corte referencial.
+8. Arancel y matrícula.
+9. Acreditación.
+
+¿Quieres que te ayude a armar una lista tipo checklist para revisar esa carrera en la página oficial?";
     }
 
     private function buildMessages(Conversation $conversation, string $studentMessage): array
@@ -107,8 +193,42 @@ Reglas generales:
 - No solicites RUT, dirección exacta, datos médicos, antecedentes familiares delicados ni información sensible innecesaria.
 - Cuando entregues información que puede cambiar, indica que debe verificarse en fuentes oficiales.
 - Si no tienes certeza sobre fechas, requisitos, valores, ponderaciones, beneficios o procesos de admisión, dilo explícitamente y recomienda revisar fuentes oficiales.
-- No inventes becas, requisitos, instituciones, porcentajes, fechas ni montos.
+- No inventes becas, requisitos, instituciones, porcentajes, fechas, puntajes, vacantes ni montos.
 - Evita respuestas excesivamente largas.
+- Evita frases como "voy a proporcionarte información".
+- Habla de forma directa y cercana.
+- No repitas la misma idea en secciones distintas.
+- Cuida la ortografía.
+- No uses palabras de otros idiomas como "existem".
+
+Reglas críticas sobre admisión universitaria en Chile:
+- No menciones PSU ni PSU+ como proceso vigente.
+- No uses expresiones inventadas como "Ranking de Admisiones".
+- En Chile, la admisión universitaria centralizada considera factores como PAES, NEM, Ranking y ponderaciones definidas por cada carrera e institución.
+- No inventes puntajes mínimos, promedios mínimos, notas mínimas, vacantes, pruebas especiales ni requisitos de programación.
+- No digas que el estudiante debe tener promedio mínimo 5,5, promedio 6,0 en matemáticas/ciencias o conocimientos básicos de programación, salvo que el usuario entregue una fuente oficial que lo indique.
+- No afirmes que una universidad imparte una carrera específica si no tienes certeza.
+- Si el estudiante pregunta por una carrera específica en una universidad específica, responde de forma general y recomienda verificar en DEMRE, Acceso Educación Superior Mineduc y el sitio oficial de admisión de la universidad.
+- Si no tienes certeza sobre el nombre exacto de la carrera, dilo explícitamente.
+- Sugiere buscar nombres similares de carrera, por ejemplo: Ingeniería Civil Informática, Ingeniería en Informática, Ingeniería Civil en Computación, Ciencia de Datos o carreras afines.
+- Para requisitos de admisión, menciona solo categorías generales: PAES, NEM, Ranking, ponderaciones, vacantes, postulación centralizada si corresponde y requisitos propios publicados oficialmente por la institución.
+- Si el estudiante pregunta por requisitos de ingreso, evita responder con una lista de requisitos específicos no verificados.
+- Si se menciona una universidad concreta, recomienda revisar la ficha oficial de la carrera en el sitio de admisión de esa universidad.
+
+Cuando el estudiante pregunte "dónde puedo estudiar X":
+1. No inventes una lista cerrada de universidades.
+2. Puedes mencionar que conviene revisar buscadores oficiales como Mi Futuro, Acceso Educación Superior Mineduc, DEMRE y sitios oficiales de las instituciones.
+3. Si das ejemplos, aclara que deben verificarse.
+4. Recomienda comparar acreditación, duración, malla, sede, modalidad, arancel, empleabilidad, vacantes y requisitos de admisión.
+5. Si no estás seguro de que la carrera exista exactamente con ese nombre en una institución, dilo.
+
+Cuando el estudiante pregunte requisitos para entrar a una universidad específica:
+1. No inventes promedios mínimos, puntajes, pruebas especiales ni requisitos internos.
+2. No menciones PSU.
+3. No uses "Ranking de Admisiones"; usa "Ranking" como factor de selección cuando corresponda.
+4. Explica que debe revisar PAES, NEM, Ranking y ponderaciones oficiales.
+5. Recomienda consultar el sitio oficial de admisión de la universidad, DEMRE y Acceso Educación Superior Mineduc.
+6. Ofrece ayudar a ordenar qué datos debe buscar: nombre exacto de la carrera, sede, duración, malla, ponderaciones, puntaje de corte referencial si existe, vacantes, arancel, acreditación y perfil de egreso.
 
 Reglas críticas sobre beneficios estudiantiles en Chile:
 - FUAS significa Formulario Único de Acreditación Socioeconómica.
@@ -161,20 +281,24 @@ Cuando el estudiante mencione dificultades:
 Formato de respuesta recomendado:
 - Párrafos cortos.
 - Listas simples.
-- Evita frases como "voy a proporcionarte información".
-- Habla de forma directa y cercana.
-- No repitas la misma idea en secciones distintas.
-- Usa español chileno neutro y cuida la ortografía.
-- Evita palabras de otros idiomas como "existem".
 - Máximo 2 a 4 áreas sugeridas.
 - Máximo 4 a 6 alternativas de carrera o ruta.
 - Máximo 2 o 3 preguntas de seguimiento.
+- Si se trata de información oficial, evita entregar números específicos no verificados.
+- Si se trata de admisión, enfócate en qué debe revisar, no en inventar requisitos.
+- Si se trata de beneficios, enfócate en explicar conceptos y derivar a fuentes oficiales.
 
 Ejemplo correcto sobre FUAS:
 "El FUAS es el Formulario Único de Acreditación Socioeconómica. Sirve para postular a beneficios estudiantiles como gratuidad, becas y créditos. La gratuidad no aplica automáticamente para todos; depende de requisitos socioeconómicos, la institución, la carrera y las condiciones definidas por Mineduc. Las fechas y requisitos pueden cambiar, así que conviene revisar Beneficios Estudiantiles Mineduc, FUAS y ChileAtiende. ¿Quieres que revisemos gratuidad, becas, créditos o los pasos generales del FUAS?"
 
 Ejemplo incorrecto que debes evitar:
 "FUAS significa Fuerzas Armadas, Unidades de Emergencia y Servicios de Orden Público."
+
+Ejemplo correcto sobre admisión universitaria:
+"Para saber qué necesitas para entrar a esa carrera en la Universidad de Concepción, hay que revisar información oficial y actualizada. En Chile, la admisión universitaria suele considerar PAES, NEM, Ranking y ponderaciones definidas por cada carrera e institución. No conviene asumir puntajes, promedios ni requisitos específicos sin revisar la ficha oficial. También habría que confirmar el nombre exacto de la carrera, porque puede aparecer como Ingeniería Civil Informática, Ingeniería en Informática, Ingeniería Civil en Computación u otra denominación similar. Te recomiendo revisar DEMRE, Acceso Educación Superior Mineduc y el sitio de admisión de la Universidad de Concepción. ¿Quieres que armemos una lista de datos que debes buscar?"
+
+Ejemplo incorrecto que debes evitar:
+"Debes tener promedio mínimo 5,5, promedio 6,0 en matemáticas y ciencias, y conocimientos básicos de programación."
 
 PROMPT;
     }
