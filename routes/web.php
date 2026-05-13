@@ -14,6 +14,8 @@ Route::post('/estudiante', [StudentController::class, 'store'])->name('student.s
 
 Route::get('/chat/{conversation}', [ChatController::class, 'show'])->name('chat.show');
 Route::post('/chat/{conversation}/mensaje', [ChatController::class, 'sendMessage'])->name('chat.message');
+Route::post('/chat/{conversation}/finalizar', [ChatController::class, 'finish'])
+    ->name('chat.finish');
 
 Route::middleware(['auth'])->prefix('orientador')->group(function () {
     Route::get('/dashboard', [OrientadorDashboardController::class, 'index'])

@@ -6,6 +6,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\AiVocationalService;
 use App\Services\OpenAiVocationalService;
+use App\Services\GroqVocationalService;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -21,7 +22,8 @@ class ChatController extends Controller
         Request $request,
         Conversation $conversation,
         AiVocationalService $aiVocationalService,
-        OpenAiVocationalService $openAiVocationalService
+        OpenAiVocationalService $openAiVocationalService,
+        GroqVocationalService $groqVocationalService
     ) {
         if ($conversation->status === 'finished') {
             return redirect()
@@ -45,9 +47,11 @@ class ChatController extends Controller
 
         $aiMode = config('ai.mode', 'local');
 
-        $aiResponse = $aiMode === 'openai'
-            ? $openAiVocationalService->generateResponse($conversation, $validated['content'])
-            : $aiVocationalService->generateResponse($conversation, $validated['content']);
+        $aiResponse = match ($aiMode) {
+            'openai' => $openAiVocationalService->generateResponse($conversation, $validated['content']),
+            'groq' => $groqVocationalService->generateResponse($conversation, $validated['content']),
+            default => $aiVocationalService->generateResponse($conversation, $validated['content']),
+        };
 
         Message::create([
             'conversation_id' => $conversation->id,

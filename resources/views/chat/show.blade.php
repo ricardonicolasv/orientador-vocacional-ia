@@ -54,7 +54,19 @@
                         </span>
                         @endif
                         <span class="inline-flex rounded-full bg-purple-100 px-3 py-1 font-semibold text-purple-700">
-                            IA: {{ config('ai.mode') === 'openai' ? 'OpenAI' : 'Local' }}
+                            IA:
+                            @switch(config('ai.mode'))
+                            @case('openai')
+                            OpenAI
+                            @break
+
+                            @case('groq')
+                            Groq
+                            @break
+
+                            @default
+                            Local
+                            @endswitch
                         </span>
                     </div>
                 </div>
