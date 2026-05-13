@@ -1,66 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Orientador Vocacional IA
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación web desarrollada en **PHP con Laravel**, orientada a estudiantes de enseñanza media del **Instituto San José**.  
+El sistema permite que los estudiantes interactúen con un chat vocacional, seleccionen rutas de orientación y generen reportes individuales para ser revisados por un orientador.
 
-## About Laravel
+Actualmente el proyecto funciona como un **MVP** con lógica local de respuestas vocacionales. La conexión con una IA real mediante API queda preparada como mejora futura.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Estado actual del proyecto
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Funcionalidades implementadas:
 
-## Learning Laravel
+- Registro básico de estudiantes.
+- Selección de ruta vocacional.
+- Chat vocacional con respuestas locales inteligentes.
+- Guardado de conversaciones en base de datos.
+- Login de orientador mediante Laravel Breeze.
+- Dashboard privado para el orientador.
+- Visualización de estudiantes registrados.
+- Visualización del historial de conversación.
+- Generación de reporte vocacional individual.
+- Vista de reporte en pantalla.
+- Descarga de reporte vocacional en PDF.
+- Interfaz responsive con Blade y Tailwind CSS.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Tecnologías utilizadas
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Tecnología | Versión / Uso |
+|---|---|
+| PHP | 8.2.12 |
+| Laravel | 12.x |
+| MySQL / MariaDB | Base de datos relacional |
+| XAMPP | Entorno local de desarrollo |
+| Composer | Gestor de dependencias PHP |
+| Node.js | Dependencias frontend |
+| NPM | Compilación de assets |
+| Blade | Motor de plantillas |
+| Tailwind CSS | Diseño visual |
+| Laravel Breeze | Autenticación |
+| DomPDF | Generación de reportes PDF |
+| Git / GitHub | Control de versiones |
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Objetivo del sistema
 
-### Premium Partners
+El objetivo principal es crear una plataforma de orientación vocacional asistida por IA para estudiantes de enseñanza media, especialmente de 3° y 4° medio.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+La aplicación busca apoyar al estudiante en temas como:
 
-## Contributing
+- Qué carrera estudiar.
+- Qué ruta formativa seguir.
+- Diferencias entre universidad, instituto profesional y CFT.
+- Opciones técnico-profesionales.
+- Beneficios estudiantiles, becas, gratuidad y FUAS.
+- Carreras pedagógicas.
+- Opciones en Fuerzas Armadas, de Orden y Seguridad Pública.
+- Comparación inicial de áreas de interés.
+- Generación de reportes para seguimiento del orientador.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+La herramienta no reemplaza el trabajo del orientador, sino que funciona como apoyo para ordenar intereses, dudas y posibles caminos vocacionales.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Rutas vocacionales consideradas
 
-## Security Vulnerabilities
+El sistema permite orientar al estudiante según una de las siguientes rutas:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. **Ruta universitaria**
+   - PAES.
+   - DEMRE.
+   - Acceso Mineduc.
+   - NEM, Ranking y ponderaciones.
+   - Carreras universitarias.
+   - Acreditación.
+   - Campo laboral y empleabilidad.
 
-## License
+2. **Ruta técnico-profesional**
+   - Institutos Profesionales.
+   - Centros de Formación Técnica.
+   - Carreras técnicas.
+   - Continuidad de estudios.
+   - Empleabilidad.
+   - Beneficios estudiantiles.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3. **Beneficios y financiamiento**
+   - FUAS.
+   - Gratuidad.
+   - Becas.
+   - Créditos.
+   - Requisitos generales.
+   - Fechas importantes.
+
+4. **Pedagogías**
+   - Vocación docente.
+   - Requisitos para estudiar pedagogía.
+   - Acreditación.
+   - Alternativas en educación.
+
+5. **Fuerzas Armadas, de Orden y Seguridad Pública**
+   - Escuela Militar.
+   - Armada de Chile.
+   - FACh.
+   - Carabineros.
+   - PDI.
+   - Gendarmería.
+
+6. **No sé aún / Ayúdame a explorar**
+   - Exploración general de intereses.
+   - Preguntas orientadoras.
+   - Detección inicial de áreas vocacionales.
+
+---
+
+## Módulos principales
+
+### 1. Registro del estudiante
+
+El estudiante ingresa:
+
+- Nombre.
+- Curso.
+- Colegio.
+- Ruta vocacional seleccionada.
+- Aceptación de consentimiento simple.
+
+El sistema no solicita datos sensibles como RUT, dirección exacta, información médica o datos familiares delicados.
+
+---
+
+### 2. Chat vocacional
+
+El estudiante puede conversar con el asistente vocacional.
+
+Actualmente el chat usa un servicio local:
+
+```txt
+app/Services/AiVocationalService.php
