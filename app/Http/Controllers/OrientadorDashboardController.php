@@ -32,6 +32,12 @@ class OrientadorDashboardController extends Controller
         $dateFrom = $validated['date_from'] ?? null;
         $dateTo = $validated['date_to'] ?? null;
 
+        /*
+        |--------------------------------------------------------------------------
+        | Consulta base filtrada
+        |--------------------------------------------------------------------------
+        */
+
         $studentsQuery = Student::query()
             ->withCount('conversations')
             ->with([
@@ -73,15 +79,12 @@ class OrientadorDashboardController extends Controller
             });
         }
 
-        $students = $studentsQuery
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
-
         /*
         |--------------------------------------------------------------------------
         | Estadísticas según filtros
         |--------------------------------------------------------------------------
+        | Se calculan antes de paginar para contar todos los estudiantes filtrados,
+        | no solo los 10 estudiantes visibles en la página actual.
         */
 
         $filteredStudentIds = (clone $studentsQuery)
@@ -90,13 +93,15 @@ class OrientadorDashboardController extends Controller
 
         $totalStudents = $filteredStudentIds->count();
 
-        $totalConversations = Conversation::whereIn('student_id', $filteredStudentIds)->count();
+        $totalConversations = Conversation::whereIn('student_id', $filteredStudentIds)
+            ->count();
 
         $activeConversations = Conversation::whereIn('student_id', $filteredStudentIds)
             ->where('status', 'active')
             ->count();
 
-        $totalReports = VocationalReport::whereIn('student_id', $filteredStudentIds)->count();
+        $totalReports = VocationalReport::whereIn('student_id', $filteredStudentIds)
+            ->count();
 
         $routesStats = Conversation::select('selected_route', DB::raw('COUNT(*) as total'))
             ->whereIn('student_id', $filteredStudentIds)
@@ -116,6 +121,18 @@ class OrientadorDashboardController extends Controller
             ->groupBy('course')
             ->orderByDesc('total')
             ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Lista paginada
+        |--------------------------------------------------------------------------
+        | Esta consulta se pagina solo después de calcular estadísticas.
+        */
+
+        $students = $studentsQuery
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         /*
         |--------------------------------------------------------------------------
