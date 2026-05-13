@@ -85,7 +85,7 @@ La aplicación busca apoyar al estudiante en temas como:
 
 El sistema puede funcionar con distintos modos de IA configurables desde el archivo `.env`.
 
-```env
+env
 AI_MODE=local
 
 o:
@@ -139,8 +139,9 @@ OPENAI_MODEL=gpt-4.1-mini
 
 Importante: el uso de la API de OpenAI requiere billing/créditos activos en OpenAI Platform.
 
-🧭 Rutas vocacionales consideradas
-1. Ruta universitaria
+## 🧭 Rutas vocacionales consideradas
+
+- 1. Ruta universitaria
 
 Considera orientación sobre:
 
@@ -151,7 +152,8 @@ NEM, Ranking y ponderaciones.
 Carreras universitarias.
 Acreditación.
 Campo laboral y empleabilidad.
-2. Ruta técnico-profesional
+
+- 2. Ruta técnico-profesional
 
 Considera orientación sobre:
 
@@ -161,7 +163,8 @@ Carreras técnicas.
 Continuidad de estudios.
 Empleabilidad.
 Beneficios estudiantiles.
-3. Beneficios y financiamiento
+
+- 3. Beneficios y financiamiento
 
 Considera orientación sobre:
 
@@ -171,7 +174,8 @@ Becas.
 Créditos.
 Requisitos generales.
 Fechas importantes.
-4. Pedagogías
+
+- 4. Pedagogías
 
 Considera orientación sobre:
 
@@ -179,7 +183,8 @@ Vocación docente.
 Requisitos para estudiar pedagogía.
 Acreditación.
 Alternativas en educación.
-5. Fuerzas Armadas, de Orden y Seguridad Pública
+
+- 5. Fuerzas Armadas, de Orden y Seguridad Pública
 
 Considera orientación sobre:
 
@@ -189,7 +194,8 @@ FACh.
 Carabineros.
 PDI.
 Gendarmería.
-6. No sé aún / Ayúdame a explorar
+
+- 6. No sé aún / Ayúdame a explorar
 
 Considera orientación sobre:
 
@@ -197,8 +203,10 @@ Exploración general de intereses.
 Preguntas orientadoras.
 Detección inicial de áreas vocacionales.
 Comparación de posibles caminos formativos.
-🧩 Módulos principales
-👨‍🎓 1. Registro del estudiante
+
+## 🧩 Módulos principales
+
+- 👨‍🎓 1. Registro del estudiante
 
 El estudiante ingresa:
 
@@ -210,7 +218,7 @@ Aceptación de consentimiento simple.
 
 El sistema no solicita datos sensibles como RUT, dirección exacta, información médica o datos familiares delicados.
 
-💬 2. Chat vocacional
+- 💬 2. Chat vocacional
 
 El estudiante puede conversar con el asistente vocacional.
 
@@ -229,7 +237,8 @@ Servicios asociados:
 app/Services/AiVocationalService.php
 app/Services/GroqVocationalService.php
 app/Services/OpenAiVocationalService.php
-🧑‍🏫 3. Panel del orientador
+
+- 🧑‍🏫 3. Panel del orientador
 
 El orientador accede mediante login privado.
 
@@ -246,7 +255,8 @@ Revisar conversaciones asociadas.
 Consultar el detalle del chat.
 Generar reportes vocacionales.
 Descargar reportes en PDF.
-📊 4. Estadísticas del dashboard
+
+- 📊 4. Estadísticas del dashboard
 
 El dashboard incluye:
 
@@ -259,7 +269,8 @@ Claridad vocacional estimada.
 Cursos con mayor uso.
 Estudiantes sin reporte.
 Indicador del modo IA activo.
-📄 5. Reporte vocacional individual
+
+- 📄 5. Reporte vocacional individual
 
 El sistema genera un reporte a partir de la conversación del estudiante.
 
@@ -283,7 +294,8 @@ Nivel	Descripción
 Bajo	El estudiante aún no identifica áreas o alternativas claras.
 Medio	Tiene intereses generales, pero necesita comparar opciones.
 Alto	Tiene alternativas concretas y necesita información específica.
-🧾 6. Exportación PDF
+
+- 🧾 6. Exportación PDF
 
 Los reportes pueden descargarse como PDF mediante DomPDF.
 
@@ -294,7 +306,8 @@ resources/views/reports/pdf.blade.php
 Controlador asociado:
 
 app/Http/Controllers/ReportController.php
-🛡️ Respuestas seguras implementadas
+
+## 🛡️ Respuestas seguras implementadas
 
 El sistema incluye reglas locales para evitar que la IA invente datos en temas sensibles.
 
@@ -348,7 +361,8 @@ Instituto profesional.
 
 El sistema evita inventar carreras, sedes o mallas y recomienda revisar la oferta académica oficial.
 
-🗂️ Estructura principal del proyecto
+## 🗂️ Estructura principal del proyecto
+
 app/
 ├── Http/
 │   └── Controllers/
@@ -391,7 +405,9 @@ database/
     ├── create_messages_table.php
     ├── create_vocational_reports_table.php
     └── create_vocational_routes_table.php
-🗄️ Modelo de datos principal
+
+## 🗄️ Modelo de datos principal
+
 students
 
 Guarda los datos básicos del estudiante.
@@ -457,15 +473,17 @@ name	Nombre de la ruta
 slug	Identificador amigable
 description	Descripción
 timestamps	Fechas de creación y actualización
-⚙️ Instalación del proyecto en local
-1. Clonar el repositorio
+
+## ⚙️ Instalación del proyecto en local
+
+- 1. Clonar el repositorio
 git clone https://github.com/ricardonicolasv/orientador-vocacional-ia.git
 cd orientador-vocacional-ia
-2. Instalar dependencias PHP
+- 2. Instalar dependencias PHP
 composer install
-3. Instalar dependencias frontend
+- 3. Instalar dependencias frontend
 npm install
-4. Crear archivo .env
+- 4. Crear archivo .env
 
 En Windows:
 
@@ -474,9 +492,9 @@ copy .env.example .env
 En Linux/Mac:
 
 cp .env.example .env
-5. Generar clave de aplicación
+- 5. Generar clave de aplicación
 php artisan key:generate
-6. Configurar base de datos
+- 6. Configurar base de datos
 
 Crear una base de datos en MySQL/phpMyAdmin:
 
@@ -496,7 +514,7 @@ DB_PORT=3306
 DB_DATABASE=orientador_vocacional_ia
 DB_USERNAME=root
 DB_PASSWORD=
-7. Configurar modo de IA
+- 7. Configurar modo de IA
 
 Modo local:
 
@@ -516,19 +534,19 @@ OPENAI_MODEL=gpt-4.1-mini
 
 El archivo .env no debe subirse a GitHub.
 
-8. Ejecutar migraciones
+- 8. Ejecutar migraciones
 php artisan migrate
 
 Si se necesita reiniciar completamente la base de datos:
 
 php artisan migrate:fresh
-9. Levantar servidor Laravel
+- 9. Levantar servidor Laravel
 php artisan serve
 
 URL local:
 
 http://127.0.0.1:8000
-10. Compilar assets con Vite
+- 10. Compilar assets con Vite
 
 En otra terminal:
 
@@ -537,7 +555,9 @@ npm run dev
 Si PowerShell bloquea NPM, usar:
 
 npm.cmd run dev
-🧪 Comandos útiles
+
+## 🧪 Comandos útiles
+
 Acción	Comando
 Limpiar caché general	php artisan optimize:clear
 Limpiar vistas	php artisan view:clear
@@ -549,7 +569,9 @@ Reiniciar base de datos	php artisan migrate:fresh
 Ejecutar servidor local	php artisan serve
 Compilar frontend	npm run dev
 Compilar frontend en PowerShell	npm.cmd run dev
-🌐 Rutas principales del sistema
+
+## 🌐 Rutas principales del sistema
+
 Método	Ruta	Descripción
 GET	/	Pantalla de inicio
 GET	/estudiante/inicio	Formulario de registro del estudiante
@@ -563,7 +585,8 @@ GET	/orientador/estudiantes/{student}	Detalle del estudiante
 POST	/orientador/conversaciones/{conversation}/generar-reporte	Genera reporte
 GET	/orientador/reportes/{report}	Muestra reporte
 GET	/orientador/reportes/{report}/pdf	Descarga reporte PDF
-🔐 Seguridad y privacidad
+
+## 🔐 Seguridad y privacidad
 
 El sistema considera las siguientes medidas básicas:
 
@@ -582,7 +605,9 @@ Archivos que no deben subirse a GitHub:
 /vendor
 /node_modules
 /public/build
-🔁 Uso de Git y GitHub
+
+## 🔁 Uso de Git y GitHub
+
 Guardar cambios futuros
 git status
 git add .
@@ -591,7 +616,9 @@ git push
 Verificar que .env no se suba
 git status
 git check-ignore -v .env
-🔄 Flujo actual del estudiante
+
+## 🔄 Flujo actual del estudiante
+
 Inicio
 → Registro del estudiante
 → Selección de ruta vocacional
@@ -599,7 +626,9 @@ Inicio
 → Chat vocacional
 → Finalizar conversación
 → Guardado de mensajes
-🔄 Flujo actual del orientador
+
+## 🔄 Flujo actual del orientador
+
 Login
 → Dashboard
 → Lista de estudiantes
@@ -609,7 +638,9 @@ Login
 → Generación de reporte
 → Visualización de reporte
 → Descarga PDF
-🚧 Próximas mejoras planificadas
+
+## 🚧 Próximas mejoras planificadas
+
 Reporte híbrido con IA.
 Mejorar diseño institucional del PDF.
 Panel administrativo de rutas vocacionales.
@@ -622,7 +653,8 @@ Sistema de actualización de información oficial.
 Exportación de estadísticas.
 Mejor control de límites y fallback de IA.
 Pruebas automatizadas.
-📚 Fuentes oficiales consideradas
+
+## 📚 Fuentes oficiales consideradas
 
 La aplicación está pensada para consultar o considerar información oficial de:
 
@@ -643,7 +675,8 @@ Carabineros de Chile.
 PDI.
 Gendarmería de Chile.
 Sitios oficiales de universidades, institutos profesionales y CFT.
-⚠️ Consideraciones importantes
+
+## ⚠️ Consideraciones importantes
 
 Este sistema entrega orientación informativa y preliminar.
 
@@ -651,7 +684,7 @@ No reemplaza la entrevista con el orientador del colegio ni la revisión directa
 
 Las fechas, requisitos, beneficios, ponderaciones, procesos de admisión, carreras disponibles, sedes, aranceles y condiciones institucionales pueden cambiar, por lo que siempre deben verificarse en las páginas oficiales correspondientes.
 
-👨‍💻 Autor
+##👨‍💻 Autor
 
 Proyecto desarrollado por:
 
@@ -659,7 +692,7 @@ Ricardo Vidal
 Ingeniería en Informática
 GitHub: @ricardonicolasv
 
-📄 Licencia
+##📄 Licencia
 
 Proyecto desarrollado con fines académicos y de prototipado.
 
