@@ -16,6 +16,10 @@ class GroqVocationalService
             return $this->safeAdmissionRequirementsResponse($conversation);
         }
 
+        if ($this->isSpecificInstitutionQuestion($normalizedMessage)) {
+            return $this->safeInstitutionResponse($conversation, $normalizedMessage);
+        }
+
         $apiKey = config('ai.groq.api_key');
         $model = config('ai.groq.model');
 
@@ -41,6 +45,10 @@ class GroqVocationalService
                     'body' => $response->json(),
                 ]);
 
+                if ($response->status() === 429) {
+                    return $this->rateLimitFallbackResponse();
+                }
+
                 if (app()->environment('local')) {
                     return 'Error Groq: ' . $response->status() . ' - ' . json_encode($response->json(), JSON_UNESCAPED_UNICODE);
                 }
@@ -57,6 +65,24 @@ class GroqVocationalService
 
             return 'Ocurrió un problema al conectar con la IA. Intenta nuevamente más tarde.';
         }
+    }
+
+    private function rateLimitFallbackResponse(): string
+    {
+        return "En este momento la IA alcanzó su límite temporal de uso, pero podemos seguir orientando con una respuesta base.
+
+Si estás preguntando por una institución específica, lo más seguro es revisar directamente su sitio oficial y comparar:
+- Nombre exacto de la carrera.
+- Sede.
+- Duración.
+- Malla curricular.
+- Modalidad.
+- Arancel.
+- Acreditación institucional.
+- Campo laboral.
+- Requisitos de admisión.
+
+Puedes intentarlo nuevamente en unos segundos o consultar con el orientador del colegio para revisar la información oficial.";
     }
 
     private function normalize(string $text): string
@@ -92,6 +118,44 @@ class GroqVocationalService
             str_contains($message, 'cft');
 
         return $hasAdmissionIntent && $hasInstitutionIntent;
+    }
+
+    private function isSpecificInstitutionQuestion(string $message): bool
+    {
+        $institutions = [
+            'aiep',
+            'duoc',
+            'duoc uc',
+            'inacap',
+            'santo tomas',
+            'universidad de concepcion',
+            'udec',
+            'universidad del bio bio',
+            'ubb',
+            'instituto profesional',
+            'cft',
+        ];
+
+        $questionIntent =
+            str_contains($message, 'que me dices') ||
+            str_contains($message, 'que opinas') ||
+            str_contains($message, 'puedo estudiar') ||
+            str_contains($message, 'existe') ||
+            str_contains($message, 'existen') ||
+            str_contains($message, 'tiene carrera') ||
+            str_contains($message, 'hay carrera') ||
+            str_contains($message, 'donde estudiar') ||
+            str_contains($message, 'alguna carrera') ||
+            str_contains($message, 'carrera similar') ||
+            str_contains($message, 'carreras similares');
+
+        foreach ($institutions as $institution) {
+            if (str_contains($message, $institution) && $questionIntent) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function safeAdmissionRequirementsResponse(Conversation $conversation): string
@@ -137,6 +201,56 @@ Para avanzar, podrías buscar estos datos:
 9. Acreditación.
 
 ¿Quieres que te ayude a armar una lista tipo checklist para revisar esa carrera en la página oficial?";
+    }
+
+    private function safeInstitutionResponse(Conversation $conversation, string $message): string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+        $institutionName = $this->detectInstitutionName($message);
+
+        return "Buena pregunta, {$studentName}.
+
+Sobre {$institutionName}, lo correcto es revisar la oferta académica directamente en el sitio oficial de la institución, porque las carreras, sedes, modalidades, mallas y aranceles pueden cambiar.
+
+Para una línea relacionada con apoyo a personas, familias, niños o necesidades especiales, podrías buscar carreras o programas vinculados a:
+- Técnico en Educación Especial.
+- Técnico en Educación Parvularia.
+- Trabajo Social.
+- Servicio Social.
+- Psicopedagogía.
+- Terapia Ocupacional.
+- Educación Diferencial.
+- Carreras del área social, educativa o salud.
+
+No conviene asumir que una institución imparte una carrera específica sin verificarlo en su sitio oficial.
+
+Para revisar bien, busca estos datos:
+1. Nombre exacto de la carrera.
+2. Sede disponible.
+3. Modalidad: presencial, online o vespertina.
+4. Duración.
+5. Malla curricular.
+6. Campo laboral.
+7. Arancel y matrícula.
+8. Acreditación de la institución.
+9. Requisitos de admisión.
+
+¿Quieres que armemos una comparación entre instituto profesional, CFT y universidad para esta área?";
+    }
+
+    private function detectInstitutionName(string $message): string
+    {
+        return match (true) {
+            str_contains($message, 'aiep') => 'AIEP',
+            str_contains($message, 'duoc') => 'DUOC UC',
+            str_contains($message, 'inacap') => 'INACAP',
+            str_contains($message, 'santo tomas') => 'Santo Tomás',
+            str_contains($message, 'universidad de concepcion') || str_contains($message, 'udec') => 'la Universidad de Concepción',
+            str_contains($message, 'universidad del bio bio') || str_contains($message, 'ubb') => 'la Universidad del Bío-Bío',
+            str_contains($message, 'instituto profesional') => 'el instituto profesional',
+            str_contains($message, 'cft') => 'el centro de formación técnica',
+            default => 'esa institución',
+        };
     }
 
     private function buildMessages(Conversation $conversation, string $studentMessage): array
@@ -229,6 +343,12 @@ Cuando el estudiante pregunte requisitos para entrar a una universidad específi
 4. Explica que debe revisar PAES, NEM, Ranking y ponderaciones oficiales.
 5. Recomienda consultar el sitio oficial de admisión de la universidad, DEMRE y Acceso Educación Superior Mineduc.
 6. Ofrece ayudar a ordenar qué datos debe buscar: nombre exacto de la carrera, sede, duración, malla, ponderaciones, puntaje de corte referencial si existe, vacantes, arancel, acreditación y perfil de egreso.
+
+Cuando el estudiante pregunte por una institución específica como AIEP, DUOC UC, INACAP, Santo Tomás, una universidad o un CFT:
+1. No inventes carreras, sedes, mallas ni requisitos.
+2. Recomienda revisar la oferta académica oficial.
+3. Puedes sugerir áreas relacionadas, pero aclara que deben verificarse.
+4. Recomienda comparar nombre exacto de carrera, sede, modalidad, duración, arancel, malla, campo laboral y acreditación.
 
 Reglas críticas sobre beneficios estudiantiles en Chile:
 - FUAS significa Formulario Único de Acreditación Socioeconómica.
