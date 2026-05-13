@@ -8,6 +8,9 @@
                 <p class="text-sm text-gray-500 mt-1">
                     Seguimiento general de estudiantes, conversaciones y reportes vocacionales.
                 </p>
+                <p class="text-xs text-purple-700 mt-2 font-semibold">
+                    Modo IA activo: {{ config('ai.mode') === 'openai' ? 'OpenAI' : 'Local' }}
+                </p>
             </div>
 
             <a href="{{ route('welcome') }}"
