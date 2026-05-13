@@ -141,7 +141,7 @@ Importante: el uso de la API de OpenAI requiere billing/créditos activos en Ope
 
 ## 🧭 Rutas vocacionales consideradas
 
-- 1. Ruta universitaria
+1. Ruta universitaria
 
 Considera orientación sobre:
 
@@ -153,7 +153,7 @@ Carreras universitarias.
 Acreditación.
 Campo laboral y empleabilidad.
 
-- 2. Ruta técnico-profesional
+2. Ruta técnico-profesional
 
 Considera orientación sobre:
 
@@ -164,7 +164,7 @@ Continuidad de estudios.
 Empleabilidad.
 Beneficios estudiantiles.
 
-- 3. Beneficios y financiamiento
+3. Beneficios y financiamiento
 
 Considera orientación sobre:
 
@@ -175,7 +175,7 @@ Créditos.
 Requisitos generales.
 Fechas importantes.
 
-- 4. Pedagogías
+4. Pedagogías
 
 Considera orientación sobre:
 
@@ -184,7 +184,7 @@ Requisitos para estudiar pedagogía.
 Acreditación.
 Alternativas en educación.
 
-- 5. Fuerzas Armadas, de Orden y Seguridad Pública
+5. Fuerzas Armadas, de Orden y Seguridad Pública
 
 Considera orientación sobre:
 
@@ -195,7 +195,7 @@ Carabineros.
 PDI.
 Gendarmería.
 
-- 6. No sé aún / Ayúdame a explorar
+6. No sé aún / Ayúdame a explorar
 
 Considera orientación sobre:
 
