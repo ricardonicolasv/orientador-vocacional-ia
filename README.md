@@ -1,16 +1,16 @@
-# Orientador Vocacional IA
+# 🎓 Orientador Vocacional IA
 
-Aplicación web desarrollada en **PHP con Laravel**, orientada a estudiantes de enseñanza media del **Instituto San José**.
+Aplicación web desarrollada en **PHP + Laravel**, orientada a estudiantes de enseñanza media del **Instituto San José**.
 
 El sistema permite que los estudiantes interactúen con un chat vocacional, seleccionen rutas de orientación y generen reportes individuales para ser revisados por un orientador.
 
-Actualmente el proyecto funciona como un **MVP** con lógica local de respuestas vocacionales. La conexión con una IA real mediante API queda preparada como mejora futura.
+Actualmente el proyecto funciona como un **MVP** con lógica local de respuestas vocacionales. La integración con una IA real mediante API queda preparada como mejora futura.
 
 ---
 
-## Estado actual del proyecto
+## 📌 Estado actual del proyecto
 
-Funcionalidades implementadas:
+### Funcionalidades implementadas
 
 - Registro básico de estudiantes.
 - Selección de ruta vocacional.
@@ -27,28 +27,27 @@ Funcionalidades implementadas:
 
 ---
 
-## Tecnologías utilizadas
+## 🧰 Tecnologías utilizadas
 
-| Tecnología | Versión / Uso |
+| Tecnología | Uso |
 |---|---|
-| PHP | 8.2.12 |
-| Laravel | 12.x |
-| MySQL / MariaDB | Base de datos relacional |
-| XAMPP | Entorno local de desarrollo |
-| Composer | Gestor de dependencias PHP |
-| Node.js | Dependencias frontend |
-| NPM | Compilación de assets |
-| Blade | Motor de plantillas |
-| Tailwind CSS | Diseño visual |
-| Laravel Breeze | Autenticación |
-| DomPDF | Generación de reportes PDF |
-| Git / GitHub | Control de versiones |
+| **PHP 8.2.12** | Lenguaje principal del backend |
+| **Laravel 12.x** | Framework principal |
+| **MySQL / MariaDB** | Base de datos relacional |
+| **XAMPP** | Entorno local de desarrollo |
+| **Composer** | Gestor de dependencias PHP |
+| **Node.js + NPM** | Dependencias frontend y compilación |
+| **Blade** | Motor de plantillas |
+| **Tailwind CSS** | Diseño visual responsive |
+| **Laravel Breeze** | Autenticación |
+| **DomPDF** | Generación de reportes PDF |
+| **Git / GitHub** | Control de versiones |
 
 ---
 
-## Objetivo del sistema
+## 🎯 Objetivo del sistema
 
-El objetivo principal es crear una plataforma de orientación vocacional asistida por IA para estudiantes de enseñanza media, especialmente de 3° y 4° medio.
+El objetivo principal es crear una plataforma de orientación vocacional asistida por IA para estudiantes de enseñanza media, especialmente de **3° y 4° medio**.
 
 La aplicación busca apoyar al estudiante en temas como:
 
@@ -62,13 +61,11 @@ La aplicación busca apoyar al estudiante en temas como:
 - Comparación inicial de áreas de interés.
 - Generación de reportes para seguimiento del orientador.
 
-La herramienta no reemplaza el trabajo del orientador, sino que funciona como apoyo para ordenar intereses, dudas y posibles caminos vocacionales.
+> Esta herramienta no reemplaza el trabajo del orientador. Su función es apoyar el proceso de orientación, ordenar intereses, identificar dudas y entregar información inicial al estudiante.
 
 ---
 
-## Rutas vocacionales consideradas
-
-El sistema permite orientar al estudiante según una de las siguientes rutas:
+## 🧭 Rutas vocacionales consideradas
 
 ### 1. Ruta universitaria
 
@@ -135,9 +132,9 @@ Considera orientación sobre:
 
 ---
 
-## Módulos principales
+## 🧩 Módulos principales
 
-### 1. Registro del estudiante
+### 👨‍🎓 1. Registro del estudiante
 
 El estudiante ingresa:
 
@@ -151,7 +148,7 @@ El sistema no solicita datos sensibles como RUT, dirección exacta, información
 
 ---
 
-### 2. Chat vocacional
+### 💬 2. Chat vocacional
 
 El estudiante puede conversar con el asistente vocacional.
 
@@ -179,7 +176,7 @@ Biología, salud y ciencias.
 Educación y pedagogía.
 Fuerzas Armadas, Orden y Seguridad Pública.
 Beneficios estudiantiles y financiamiento.
-3. Panel del orientador
+🧑‍🏫 3. Panel del orientador
 
 El orientador accede mediante login privado.
 
@@ -192,7 +189,7 @@ Ver conversaciones asociadas.
 Consultar el detalle del chat.
 Generar reportes vocacionales.
 Descargar reportes en PDF.
-4. Reporte vocacional individual
+📄 4. Reporte vocacional individual
 
 El sistema genera un reporte a partir de la conversación del estudiante.
 
@@ -209,14 +206,12 @@ Nivel de claridad vocacional.
 Recomendaciones sugeridas.
 Resumen para el estudiante.
 Sección técnica para el orientador.
-
-Niveles de claridad:
-
+Niveles de claridad vocacional
 Nivel	Descripción
 Bajo	El estudiante aún no identifica áreas o alternativas claras.
 Medio	Tiene intereses generales, pero necesita comparar opciones.
 Alto	Tiene alternativas concretas y necesita información específica.
-5. Exportación PDF
+🧾 5. Exportación PDF
 
 Los reportes pueden descargarse como PDF mediante DomPDF.
 
@@ -227,7 +222,7 @@ resources/views/reports/pdf.blade.php
 Controlador asociado:
 
 app/Http/Controllers/ReportController.php
-Estructura principal del proyecto
+🗂️ Estructura principal del proyecto
 app/
 ├── Http/
 │   └── Controllers/
@@ -268,43 +263,40 @@ database/
     ├── create_messages_table.php
     ├── create_vocational_reports_table.php
     └── create_vocational_routes_table.php
-Modelo de datos principal
+🗄️ Modelo de datos principal
 students
 
 Guarda los datos básicos del estudiante.
 
-Campos principales:
-
-id
-name
-course
-school
-consent_accepted
-timestamps
+Campo	Descripción
+id	Identificador del estudiante
+name	Nombre del estudiante
+course	Curso
+school	Colegio
+consent_accepted	Aceptación de consentimiento
+timestamps	Fechas de creación y actualización
 conversations
 
 Guarda las conversaciones iniciadas por cada estudiante.
 
-Campos principales:
-
-id
-student_id
-selected_route
-status
-started_at
-finished_at
-timestamps
+Campo	Descripción
+id	Identificador de la conversación
+student_id	Relación con estudiante
+selected_route	Ruta vocacional seleccionada
+status	Estado de la conversación
+started_at	Fecha de inicio
+finished_at	Fecha de término
+timestamps	Fechas de creación y actualización
 messages
 
 Guarda los mensajes del estudiante y del asistente.
 
-Campos principales:
-
-id
-conversation_id
-sender
-content
-timestamps
+Campo	Descripción
+id	Identificador del mensaje
+conversation_id	Relación con conversación
+sender	Emisor del mensaje
+content	Contenido del mensaje
+timestamps	Fechas de creación y actualización
 
 Valores posibles para sender:
 
@@ -314,32 +306,30 @@ vocational_reports
 
 Guarda el reporte vocacional generado desde una conversación.
 
-Campos principales:
-
-id
-student_id
-conversation_id
-interests
-detected_areas
-explored_routes
-main_questions
-clarity_level
-recommendations
-student_summary
-orientador_notes
-timestamps
+Campo	Descripción
+id	Identificador del reporte
+student_id	Relación con estudiante
+conversation_id	Relación con conversación
+interests	Intereses mencionados
+detected_areas	Áreas detectadas
+explored_routes	Ruta explorada
+main_questions	Dudas principales
+clarity_level	Nivel de claridad vocacional
+recommendations	Recomendaciones sugeridas
+student_summary	Resumen para estudiante
+orientador_notes	Notas técnicas para orientador
+timestamps	Fechas de creación y actualización
 vocational_routes
 
 Tabla preparada para administrar rutas vocacionales.
 
-Campos principales:
-
-id
-name
-slug
-description
-timestamps
-Instalación del proyecto en local
+Campo	Descripción
+id	Identificador de la ruta
+name	Nombre de la ruta
+slug	Identificador amigable
+description	Descripción
+timestamps	Fechas de creación y actualización
+⚙️ Instalación del proyecto en local
 1. Clonar el repositorio
 git clone https://github.com/ricardonicolasv/orientador-vocacional-ia.git
 cd orientador-vocacional-ia
@@ -399,22 +389,17 @@ npm run dev
 Si PowerShell bloquea NPM, usar:
 
 npm.cmd run dev
-Comandos útiles
-Limpiar caché
-php artisan optimize:clear
-Limpiar rutas
-php artisan route:clear
-Ver rutas registradas
-php artisan route:list
-Ejecutar migraciones
-php artisan migrate
-Reiniciar base de datos
-php artisan migrate:fresh
-Ejecutar servidor local
-php artisan serve
-Compilar frontend
-npm run dev
-Rutas principales del sistema
+🧪 Comandos útiles
+Acción	Comando
+Limpiar caché general	php artisan optimize:clear
+Limpiar rutas	php artisan route:clear
+Ver rutas registradas	php artisan route:list
+Ejecutar migraciones	php artisan migrate
+Reiniciar base de datos	php artisan migrate:fresh
+Ejecutar servidor local	php artisan serve
+Compilar frontend	npm run dev
+Compilar frontend en PowerShell	npm.cmd run dev
+🌐 Rutas principales del sistema
 Método	Ruta	Descripción
 GET	/	Pantalla de inicio
 GET	/estudiante/inicio	Formulario de registro del estudiante
@@ -427,7 +412,7 @@ GET	/orientador/estudiantes/{student}	Detalle del estudiante
 POST	/orientador/conversaciones/{conversation}/generar-reporte	Genera reporte
 GET	/orientador/reportes/{report}	Muestra reporte
 GET	/orientador/reportes/{report}/pdf	Descarga reporte PDF
-Seguridad y privacidad
+🔐 Seguridad y privacidad
 
 El sistema considera las siguientes medidas básicas:
 
@@ -444,7 +429,7 @@ Archivos que no deben subirse a GitHub:
 /vendor
 /node_modules
 /public/build
-Uso de Git y GitHub
+🔁 Uso de Git y GitHub
 Inicializar repositorio
 git init
 Agregar archivos
@@ -461,14 +446,14 @@ Guardar cambios futuros
 git add .
 git commit -m "Descripción del cambio"
 git push
-Flujo actual del estudiante
+🔄 Flujo actual del estudiante
 Inicio
 → Registro del estudiante
 → Selección de ruta vocacional
 → Inicio de conversación
 → Chat vocacional
 → Guardado de mensajes
-Flujo actual del orientador
+🔄 Flujo actual del orientador
 Login
 → Dashboard
 → Lista de estudiantes
@@ -477,7 +462,7 @@ Login
 → Generación de reporte
 → Visualización de reporte
 → Descarga PDF
-Próximas mejoras planificadas
+🚧 Próximas mejoras planificadas
 Estadísticas avanzadas en el dashboard.
 Filtros por curso, ruta y fecha.
 Mejoras visuales en el chat.
@@ -491,7 +476,7 @@ Panel administrativo.
 Reportes generales por curso.
 Gráficos de rutas más consultadas.
 Detección más avanzada de intereses vocacionales.
-Fuentes oficiales consideradas para futuras etapas
+📚 Fuentes oficiales consideradas para futuras etapas
 
 La aplicación está pensada para consultar o considerar información oficial de:
 
@@ -510,7 +495,7 @@ FACh.
 Carabineros de Chile.
 PDI.
 Gendarmería de Chile.
-Consideraciones importantes
+⚠️ Consideraciones importantes
 
 Este sistema entrega orientación informativa y preliminar.
 
@@ -518,7 +503,7 @@ No reemplaza la entrevista con el orientador del colegio ni la revisión directa
 
 Las fechas, requisitos, beneficios, ponderaciones, procesos de admisión y condiciones institucionales pueden cambiar, por lo que siempre deben verificarse en las páginas oficiales correspondientes.
 
-Autor
+👨‍💻 Autor
 
 Proyecto desarrollado por:
 
@@ -526,7 +511,7 @@ Ricardo Vidal
 Ingeniería en Informática
 GitHub: @ricardonicolasv
 
-Licencia
+📄 Licencia
 
 Proyecto desarrollado con fines académicos y de prototipado.
 
