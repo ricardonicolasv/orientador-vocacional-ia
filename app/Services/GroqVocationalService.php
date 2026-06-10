@@ -20,6 +20,10 @@ class GroqVocationalService
             return $this->safeInstitutionResponse($conversation, $normalizedMessage);
         }
 
+        if ($this->isCareerComparisonQuestion($normalizedMessage)) {
+            return $this->safeCareerComparisonResponse($conversation);
+        }
+
         $apiKey = config('ai.groq.api_key');
         $model = config('ai.groq.model');
 
@@ -36,7 +40,7 @@ class GroqVocationalService
                     'model' => $model,
                     'messages' => $this->buildMessages($conversation, $studentMessage),
                     'temperature' => 0.2,
-                    'max_tokens' => 700,
+                    'max_tokens' => 450,
                 ]);
 
             if ($response->failed()) {
@@ -56,8 +60,17 @@ class GroqVocationalService
                 return 'No pude generar una respuesta con IA en este momento. Intenta nuevamente o consulta con el orientador.';
             }
 
-            return trim($response->json('choices.0.message.content'))
-                ?: 'No pude generar una respuesta clara en este momento.';
+            $content = trim($response->json('choices.0.message.content'));
+
+            if (!$content) {
+                return 'No pude generar una respuesta clara en este momento.';
+            }
+
+            if ($this->isRepetitiveResponse($content)) {
+                return $this->genericShortFallbackResponse($conversation);
+            }
+
+            return $this->limitResponseLength($content);
         } catch (\Throwable $exception) {
             Log::error('Groq request exception', [
                 'message' => $exception->getMessage(),
@@ -253,6 +266,113 @@ Para revisar bien, busca estos datos:
         };
     }
 
+    private function isCareerComparisonQuestion(string $message): bool
+    {
+        return str_contains($message, 'comparar carreras') ||
+            str_contains($message, 'carreras relacionadas') ||
+            str_contains($message, 'comparar opciones') ||
+            str_contains($message, 'comparar alternativas');
+    }
+
+    private function safeCareerComparisonResponse(Conversation $conversation): string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+
+        return "Perfecto, {$studentName}. Para comparar carreras de forma ordenada, primero necesitamos cruzar tus intereses con el tipo de formación que prefieres.
+
+Podemos comparar carreras usando estos criterios:
+
+1. Área de interés:
+- Tecnología
+- Salud
+- Educación
+- Arte y creatividad
+- Área social
+- Administración o negocios
+- Fuerzas Armadas u orden público
+
+2. Tipo de institución:
+- Universidad
+- Instituto profesional
+- CFT
+
+3. Duración:
+- Carrera corta
+- Carrera técnica
+- Carrera profesional
+
+4. Forma de trabajo:
+- Trabajar con personas
+- Trabajar con tecnología
+- Trabajar en oficina
+- Trabajar en terreno
+- Crear, diseñar o comunicar
+- Resolver problemas técnicos
+
+5. Aspectos a revisar:
+- Malla curricular
+- Campo laboral
+- Acreditación
+- Arancel
+- Sede
+- Requisitos de admisión
+- Posibilidad de continuidad de estudios
+
+Para avanzar, dime 2 o 3 áreas que te interesen más. Por ejemplo:
+- tecnología y administración
+- educación y niños
+- arte y comunicación
+- salud y ayuda a personas
+- negocios y gestión";
+    }
+
+    private function isRepetitiveResponse(string $content): bool
+    {
+        $normalized = $this->normalize($content);
+
+        $patterns = [
+            'gestion de recursos de recursos',
+            'recursos de recursos de recursos',
+            'gestion de recursos de recursos de recursos',
+            'innovacion, la creatividad, la comunicacion',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (str_contains($normalized, $pattern)) {
+                return true;
+            }
+        }
+
+        return strlen($content) > 2500;
+    }
+
+    private function limitResponseLength(string $content): string
+    {
+        if (mb_strlen($content) <= 1800) {
+            return $content;
+        }
+
+        return mb_substr($content, 0, 1800) . "\n\nRespuesta resumida por extensión. Podemos seguir profundizando paso a paso.";
+    }
+
+    private function genericShortFallbackResponse(Conversation $conversation): string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+
+        return "Buena pregunta, {$studentName}. Para evitar confundirte con demasiadas opciones, comparemos paso a paso.
+
+Primero dime cuál de estas áreas te llama más la atención:
+
+1. Tecnología e informática.
+2. Administración, negocios o gestión.
+3. Educación y trabajo con niños.
+4. Salud o apoyo a personas.
+5. Arte, diseño o comunicación.
+6. Área social, psicología o familia.
+
+Con eso puedo ayudarte a comparar 2 o 3 caminos concretos.";
+    }
+
     private function buildMessages(Conversation $conversation, string $studentMessage): array
     {
         $messages = [
@@ -407,6 +527,11 @@ Formato de respuesta recomendado:
 - Si se trata de información oficial, evita entregar números específicos no verificados.
 - Si se trata de admisión, enfócate en qué debe revisar, no en inventar requisitos.
 - Si se trata de beneficios, enfócate en explicar conceptos y derivar a fuentes oficiales.
+- No hagas listas enormes de intereses.
+- No repitas palabras o frases.
+- Si el estudiante pide comparar carreras, pide primero 2 o 3 áreas de interés.
+- No enumeres más de 6 opciones en una sola respuesta.
+- Evita cadenas repetitivas como "gestión de recursos de recursos".
 
 Ejemplo correcto sobre FUAS:
 "El FUAS es el Formulario Único de Acreditación Socioeconómica. Sirve para postular a beneficios estudiantiles como gratuidad, becas y créditos. La gratuidad no aplica automáticamente para todos; depende de requisitos socioeconómicos, la institución, la carrera y las condiciones definidas por Mineduc. Las fechas y requisitos pueden cambiar, así que conviene revisar Beneficios Estudiantiles Mineduc, FUAS y ChileAtiende. ¿Quieres que revisemos gratuidad, becas, créditos o los pasos generales del FUAS?"
