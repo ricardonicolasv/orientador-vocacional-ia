@@ -145,7 +145,7 @@
                             Claridad vocacional
                         </h3>
                         <p class="text-sm text-gray-500">
-                            Nivel estimado en reportes generados.
+                            Distribución de estudiantes según estado de reporte y claridad vocacional.
                         </p>
                     </div>
 
@@ -238,7 +238,7 @@
                                 Estudiantes registrados
                             </h3>
                             <p class="text-sm text-gray-500">
-                                Revisa el detalle de cada estudiante y filtra por curso, ruta, claridad o fecha.
+                                Consulta estudiantes registrados, revisa conversaciones y genera reportes vocacionales.
                             </p>
                         </div>
 
@@ -351,6 +351,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Última ruta
                                 </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Reporte
+                                </th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Acción
                                 </th>
@@ -364,6 +367,8 @@
                             $lastRouteLabel = $lastConversation
                             ? ($routeLabels[$lastConversation->selected_route] ?? $lastConversation->selected_route)
                             : null;
+
+                            $lastReport = $student->reports->sortByDesc('created_at')->first();
                             @endphp
 
                             <tr class="hover:bg-gray-50 transition">
@@ -398,6 +403,21 @@
                                     @endif
                                 </td>
 
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($lastReport)
+                                    <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                        Generado
+                                    </span>
+                                    <div class="text-xs text-gray-400 mt-1">
+                                        {{ $lastReport->created_at->format('d-m-Y') }}
+                                    </div>
+                                    @else
+                                    <span class="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                                        Pendiente
+                                    </span>
+                                    @endif
+                                </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                     <a href="{{ route('orientador.students.show', $student) }}"
                                         class="inline-flex items-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800">
@@ -407,7 +427,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                                <td colspan="7" class="px-6 py-10 text-center text-gray-500">
                                     No se encontraron estudiantes con los filtros aplicados.
                                 </td>
                             </tr>
