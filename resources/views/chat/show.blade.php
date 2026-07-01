@@ -68,6 +68,12 @@
                             Local
                             @endswitch
                         </span>
+                        @if($conversation->student->access_code && !$isFinished)
+                        <p class="mt-3 text-xs text-slate-500">
+                            Guarda este código para retomar tu conversación si sales de la página:
+                            <span class="font-bold text-slate-800">{{ $conversation->student->access_code }}</span>
+                        </p>
+                        @endif
                     </div>
                 </div>
 
@@ -77,14 +83,14 @@
                         onsubmit="return confirm('¿Deseas finalizar esta conversación? Después no podrás enviar más mensajes.');">
                         @csrf
                         <button type="submit"
-                            class="inline-flex justify-center rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                            class="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 hover:shadow-md">
                             Finalizar conversación
                         </button>
                     </form>
                     @endif
 
                     <a href="{{ route('welcome') }}"
-                        class="inline-flex justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900">
                         Salir
                     </a>
                 </div>

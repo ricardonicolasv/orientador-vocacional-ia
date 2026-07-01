@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orientador Vocacional IA</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="min-h-screen bg-slate-50 text-slate-800">
     <main class="min-h-screen flex items-center justify-center px-6 py-10">
         <section class="max-w-5xl w-full grid md:grid-cols-2 gap-8 items-center">
@@ -25,12 +27,17 @@
 
                 <div class="mt-8 flex flex-col sm:flex-row gap-3">
                     <a href="{{ route('student.create') }}"
-                       class="inline-flex justify-center rounded-xl bg-green-700 px-6 py-3 text-white font-semibold shadow hover:bg-green-800 transition">
+                        class="inline-flex items-center justify-center rounded-2xl bg-green-700 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-green-800 hover:shadow-md">
                         Comenzar orientación
                     </a>
 
+                    <a href="{{ route('student.resume.form') }}"
+                        class="inline-flex items-center justify-center rounded-2xl border border-green-700 bg-white px-6 py-3 text-sm font-bold text-green-700 shadow-sm transition hover:bg-green-50 hover:shadow-md">
+                        Retomar orientación
+                    </a>
+
                     <a href="{{ route('login') }}"
-                       class="inline-flex justify-center rounded-xl border border-slate-300 px-6 py-3 text-slate-700 font-semibold hover:bg-white transition">
+                        class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 hover:shadow-md">
                         Acceso orientador
                     </a>
                 </div>
@@ -71,4 +78,5 @@
         </section>
     </main>
 </body>
+
 </html>
