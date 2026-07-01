@@ -11,6 +11,11 @@ Route::get('/', [StudentController::class, 'welcome'])->name('welcome');
 
 Route::get('/estudiante/inicio', [StudentController::class, 'create'])->name('student.create');
 Route::post('/estudiante', [StudentController::class, 'store'])->name('student.store');
+Route::get('/estudiante/retomar', [StudentController::class, 'resumeForm'])
+    ->name('student.resume.form');
+
+Route::post('/estudiante/retomar', [StudentController::class, 'resume'])
+    ->name('student.resume');
 
 Route::get('/chat/{conversation}', [ChatController::class, 'show'])->name('chat.show');
 Route::post('/chat/{conversation}/mensaje', [ChatController::class, 'sendMessage'])->name('chat.message');

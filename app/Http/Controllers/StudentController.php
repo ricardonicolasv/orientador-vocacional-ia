@@ -6,6 +6,7 @@ use App\Models\Student;
 use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
@@ -17,6 +18,49 @@ class StudentController extends Controller
     public function create()
     {
         return view('student.create');
+    }
+    private function generateAccessCode(): string
+    {
+        do {
+            $code = 'ISJ-' . strtoupper(Str::random(5));
+        } while (Student::where('access_code', $code)->exists());
+
+        return $code;
+    }
+    public function resumeForm()
+    {
+        return view('student.resume');
+    }
+
+    public function resume(Request $request)
+    {
+        $validated = $request->validate([
+            'access_code' => ['required', 'string', 'max:20'],
+        ], [
+            'access_code.required' => 'Ingresa tu código de acceso.',
+        ]);
+
+        $accessCode = strtoupper(trim($validated['access_code']));
+
+        $student = Student::where('access_code', $accessCode)->first();
+
+        if (!$student) {
+            return back()
+                ->withErrors(['access_code' => 'No encontramos un estudiante con ese código.'])
+                ->withInput();
+        }
+
+        $conversation = $student->conversations()
+            ->latest()
+            ->first();
+
+        if (!$conversation) {
+            return back()
+                ->withErrors(['access_code' => 'No tienes una conversación activa para retomar.'])
+                ->withInput();
+        }
+
+        return redirect()->route('chat.show', $conversation);
     }
 
     public function store(Request $request)
@@ -40,6 +84,7 @@ class StudentController extends Controller
             'course' => $validated['course'],
             'school' => $validated['school'],
             'consent_accepted' => true,
+            'access_code' => $this->generateAccessCode(),
         ]);
 
         $conversation = Conversation::create([

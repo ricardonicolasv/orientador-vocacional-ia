@@ -11,6 +11,7 @@ class Student extends Model
         'course',
         'school',
         'consent_accepted',
+        'access_code',
     ];
 
     public function conversations()
