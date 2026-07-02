@@ -460,13 +460,106 @@ class ReportGeneratorService
             return 'No se registraron intereses suficientes durante la conversación.';
         }
 
-        $response = "Intereses y antecedentes mencionados por el estudiante:\n";
-        $response .= trim($originalText);
+        $normalizedText = $this->normalize($originalText);
 
-        if (!empty($detectedAreas)) {
-            $response .= "\n\nÁreas detectadas:\n";
+        $interests = [];
+
+        if (
+            $this->containsKeyword($normalizedText, 'derecho') ||
+            $this->containsKeyword($normalizedText, 'ciencias politicas') ||
+            $this->containsKeyword($normalizedText, 'administracion publica') ||
+            $this->containsKeyword($normalizedText, 'gestion publica') ||
+            $this->containsKeyword($normalizedText, 'cargo publico') ||
+            $this->containsKeyword($normalizedText, 'politica')
+        ) {
+            $interests[] = 'Derecho, Ciencias Políticas, Administración Pública o áreas vinculadas al Estado.';
+        }
+
+        if (
+            $this->containsKeyword($normalizedText, 'fuas') ||
+            $this->containsKeyword($normalizedText, 'gratuidad') ||
+            $this->containsKeyword($normalizedText, 'beca') ||
+            $this->containsKeyword($normalizedText, 'becas') ||
+            $this->containsKeyword($normalizedText, 'financiamiento') ||
+            $this->containsKeyword($normalizedText, 'credito') ||
+            $this->containsKeyword($normalizedText, 'creditos')
+        ) {
+            $interests[] = 'Beneficios estudiantiles, gratuidad, becas, créditos y financiamiento.';
+        }
+
+        if (
+            $this->containsKeyword($normalizedText, 'concepcion') ||
+            $this->containsKeyword($normalizedText, 'udd') ||
+            $this->containsKeyword($normalizedText, 'udec') ||
+            $this->containsKeyword($normalizedText, 'unab') ||
+            $this->containsKeyword($normalizedText, 'uss')
+        ) {
+            $interests[] = 'Comparación de instituciones o alternativas de estudio en Concepción.';
+        }
+
+        if (
+            $this->containsKeyword($normalizedText, 'psicologia') ||
+            $this->containsKeyword($normalizedText, 'trabajo social') ||
+            $this->containsKeyword($normalizedText, 'educacion especial') ||
+            $this->containsKeyword($normalizedText, 'educacion diferencial') ||
+            $this->containsKeyword($normalizedText, 'ayudar')
+        ) {
+            $interests[] = 'Área social, apoyo a personas, educación o acompañamiento.';
+        }
+
+        if (
+            $this->containsKeyword($normalizedText, 'lenguaje') ||
+            $this->containsKeyword($normalizedText, 'historia') ||
+            $this->containsKeyword($normalizedText, 'ciencias sociales') ||
+            $this->containsKeyword($normalizedText, 'filosofia')
+        ) {
+            $interests[] = 'Humanidades, lenguaje, historia, filosofía o ciencias sociales.';
+        }
+
+        $antecedents = [];
+
+        if (str_contains($normalizedText, '60%') || str_contains($normalizedText, 'menores ingresos')) {
+            $antecedents[] = 'El estudiante indica pertenecer al 60% de hogares de menores ingresos y consulta por gratuidad.';
+        }
+
+        if (
+            str_contains($normalizedText, '5 anos') ||
+            str_contains($normalizedText, '5 años') ||
+            str_contains($normalizedText, '10 semestres')
+        ) {
+            $antecedents[] = 'El estudiante revisó información institucional e indicó que Derecho en UDD dura 5 años o 10 semestres.';
+        }
+
+        if (
+            $this->containsKeyword($normalizedText, 'aiep') ||
+            $this->containsKeyword($normalizedText, 'duoc') ||
+            $this->containsKeyword($normalizedText, 'inacap') ||
+            $this->containsKeyword($normalizedText, 'udd') ||
+            $this->containsKeyword($normalizedText, 'unab') ||
+            $this->containsKeyword($normalizedText, 'uss') ||
+            $this->containsKeyword($normalizedText, 'universidad')
+        ) {
+            $antecedents[] = 'El estudiante muestra interés en comparar instituciones y verificar condiciones oficiales.';
+        }
+
+        $response = '';
+
+        if (!empty($interests)) {
+            $response .= "Intereses principales detectados:\n";
+            foreach (array_unique($interests) as $interest) {
+                $response .= "- {$interest}\n";
+            }
+        } else {
+            $response .= "Intereses principales detectados:\n";
             foreach ($detectedAreas as $area) {
                 $response .= "- {$area}\n";
+            }
+        }
+
+        if (!empty($antecedents)) {
+            $response .= "\nAntecedentes relevantes:\n";
+            foreach (array_unique($antecedents) as $antecedent) {
+                $response .= "- {$antecedent}\n";
             }
         }
 
