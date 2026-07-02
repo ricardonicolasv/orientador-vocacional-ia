@@ -191,13 +191,14 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row lg:flex-col gap-2">
+                        <!--
                         @if($lastConversation)
                         <a href="{{ route('chat.show', $lastConversation) }}"
                             class="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
                             Ver último chat
                         </a>
                         @endif
-
+                        -->
                         @if($lastReport)
                         <a href="{{ route('orientador.reports.show', $lastReport) }}"
                             class="inline-flex justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
