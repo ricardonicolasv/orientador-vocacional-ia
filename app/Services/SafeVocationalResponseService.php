@@ -127,6 +127,68 @@ Para avanzar, podrías buscar estos datos:
         $message = $this->normalize($studentMessage);
 
         if (
+            str_contains($message, 'pasos') ||
+            str_contains($message, 'paso a paso') ||
+            str_contains($message, 'como postular') ||
+            str_contains($message, 'completar el fuas') ||
+            str_contains($message, 'llenar el fuas')
+        ) {
+            return "{$studentName}, estos son los pasos generales para postular a gratuidad y beneficios estudiantiles:
+
+1. Revisar las fechas oficiales del proceso FUAS.
+2. Completar el FUAS con tus datos personales, académicos y grupo familiar.
+3. Esperar el resultado de nivel socioeconómico.
+4. Revisar si quedas preseleccionado para gratuidad, becas o créditos.
+5. Matricularte en una institución y carrera que cumplan las condiciones del beneficio.
+6. Revisar el resultado final de asignación.
+7. Si el sistema solicita antecedentes adicionales, realizar la evaluación socioeconómica en la institución.
+
+Documentos o datos que podrías necesitar:
+- Datos de tu grupo familiar.
+- Ingresos del grupo familiar.
+- Información académica.
+- Datos de contacto actualizados.
+
+La gratuidad no se activa solo por llenar el FUAS: también depende de la institución, carrera, modalidad y requisitos definidos por Mineduc.
+
+¿Ya tienes pensada una institución y carrera específica para revisar el caso?";
+        }
+
+        if (
+            str_contains($message, '60%') ||
+            str_contains($message, 'menores ingresos') ||
+            str_contains($message, 'puedo postular') ||
+            str_contains($message, 'postular a la gratuidad') ||
+            str_contains($message, 'postular gratuidad') ||
+            str_contains($message, 'requisitos gratuidad') ||
+            str_contains($message, 'requisitos de gratuidad')
+        ) {
+            return "{$studentName}, sí: si perteneces al 60% de hogares de menores ingresos, puedes postular a la gratuidad mediante el FUAS.
+
+Pero es importante distinguir dos cosas:
+- Puedes postular.
+- La asignación final no es automática.
+
+Además del requisito socioeconómico, normalmente debes revisar:
+1. Completar el FUAS dentro de las fechas oficiales.
+2. Matricularte en una institución adscrita a gratuidad.
+3. Matricularte en una carrera de pregrado que cumpla las condiciones del beneficio.
+4. No contar con un título profesional previo o licenciatura terminal, salvo excepciones.
+5. Revisar que la institución, carrera y modalidad permitan acceder al beneficio.
+6. Esperar los resultados oficiales del proceso.
+
+En tu caso, estar dentro del 60% es un buen antecedente para postular, pero falta confirmar la institución y la carrera donde te matricularías.
+
+Para revisar esto con seguridad, busca:
+- Beneficios Estudiantiles Mineduc.
+- FUAS.
+- ChileAtiende.
+- Sitio oficial de la institución.
+
+¿Quieres que hagamos una checklist concreta usando tu caso, por ejemplo: Derecho en la UDD?";
+        }
+
+        if (
             str_contains($message, 'aiep') ||
             str_contains($message, 'duoc') ||
             str_contains($message, 'inacap') ||
@@ -138,21 +200,19 @@ Para avanzar, podrías buscar estos datos:
             str_contains($message, 'unab') ||
             str_contains($message, 'uss')
         ) {
-            return "{$studentName}, para saber si una institución tiene gratuidad o permite acceder a beneficios, hay que revisar información oficial y actualizada.
+            return "{$studentName}, una institución puede tener gratuidad solo si está adscrita al beneficio para el proceso correspondiente.
 
-No conviene asumir que una institución tiene gratuidad solo por ser universidad, instituto profesional o CFT.
+Para verificar una institución específica, revisa:
+1. Si está adscrita a gratuidad.
+2. Si la carrera que quieres estudiar permite acceder al beneficio.
+3. Si la modalidad de estudio cumple las condiciones.
+4. Si cumples el requisito socioeconómico.
+5. Si completaste el FUAS dentro del plazo.
+6. Si la información aparece confirmada en Beneficios Estudiantiles Mineduc o en el sitio oficial de la institución.
 
-Para verificarlo, revisa:
-- Si la institución está adscrita a gratuidad.
-- Si la carrera permite acceder a beneficios.
-- Si cumples los requisitos socioeconómicos definidos por Mineduc.
-- Si completaste el FUAS dentro de las fechas oficiales.
-- El sitio oficial de la institución.
-- Beneficios Estudiantiles Mineduc.
-- FUAS.
-- ChileAtiende.
+No basta con que sea universidad, instituto profesional o CFT. Lo importante es que esté adscrita y que la carrera cumpla las condiciones.
 
-¿Quieres que armemos una checklist para revisar si una institución permite gratuidad y beneficios?";
+¿Quieres revisar una institución concreta, por ejemplo UDD, AIEP, INACAP, DUOC UC, UNAB o USS?";
         }
 
         if (
@@ -162,20 +222,24 @@ Para verificarlo, revisa:
             str_contains($message, 'financiar') ||
             str_contains($message, 'financiamiento')
         ) {
-            return "{$studentName}, si te preocupa cómo pagar una carrera, lo principal es revisar opciones de financiamiento antes de decidir.
+            return "{$studentName}, si te preocupa cómo pagar una carrera, lo primero es ordenar las alternativas de financiamiento.
 
-Pasos recomendados:
-1. Completar el FUAS dentro de las fechas oficiales.
-2. Revisar si podrías acceder a gratuidad.
-3. Revisar becas de arancel.
-4. Revisar créditos estudiantiles, si corresponde.
-5. Comparar arancel y matrícula de la carrera.
-6. Confirmar si la institución está adscrita a beneficios.
-7. Revisar información oficial en Beneficios Estudiantiles Mineduc, FUAS y ChileAtiende.
+Opciones que deberías revisar:
+1. Gratuidad.
+2. Becas de arancel.
+3. Créditos estudiantiles.
+4. Becas internas de la institución.
+5. Apoyos complementarios, si existen.
+6. Arancel, matrícula y duración real de la carrera.
 
-La gratuidad no es automática para todos. Depende de requisitos socioeconómicos, institución, carrera y condiciones definidas por Mineduc.
+Ruta recomendada:
+- Completa el FUAS.
+- Revisa si cumples requisitos socioeconómicos.
+- Confirma si la institución está adscrita a beneficios.
+- Compara el costo total de la carrera.
+- Consulta directamente en admisión o bienestar estudiantil de la institución.
 
-¿Quieres que revisemos una ruta paso a paso para financiar estudios superiores?";
+Si me dices la carrera y la institución que estás mirando, puedo ayudarte a ordenar qué revisar.";
         }
 
         if (
@@ -186,46 +250,38 @@ La gratuidad no es automática para todos. Depende de requisitos socioeconómico
             str_contains($message, 'ingenieria') ||
             str_contains($message, 'carrera')
         ) {
-            return "{$studentName}, sí existen beneficios que pueden ayudar a financiar carreras de educación superior, pero no conviene asumir que aplican automáticamente a una carrera específica.
+            return "{$studentName}, sí pueden existir beneficios para estudiar una carrera como Derecho, pero normalmente no dependen solo de la carrera, sino de tu situación socioeconómica, la institución y los requisitos del proceso.
 
-Para una carrera como Derecho u otra carrera profesional, deberías revisar:
-- Si la institución está adscrita a gratuidad.
-- Si la carrera permite acceder a beneficios.
-- Requisitos socioeconómicos.
-- Fechas del FUAS.
-- Becas de arancel disponibles.
-- Créditos estudiantiles.
-- Arancel y matrícula.
-- Duración de la carrera.
+Para Derecho deberías revisar:
+1. Si la universidad está adscrita a gratuidad.
+2. Si Derecho en esa universidad cumple las condiciones del beneficio.
+3. Si cumples el requisito socioeconómico.
+4. Si debes cumplir requisitos académicos para becas específicas.
+5. Arancel y matrícula.
+6. Duración de la carrera.
+7. Fechas del FUAS.
 
-El FUAS es el Formulario Único de Acreditación Socioeconómica y sirve para postular a beneficios como gratuidad, becas y créditos.
+El FUAS permite postular a gratuidad, becas y créditos. Si estás dentro del 60% de menores ingresos, podrías postular a gratuidad, pero debes confirmar los demás requisitos.
 
-Te recomiendo revisar fuentes oficiales: Beneficios Estudiantiles Mineduc, FUAS, ChileAtiende y el sitio de la institución donde quieras estudiar.
-
-¿Quieres comparar gratuidad, becas y créditos?";
+¿Quieres que revisemos el caso como ejemplo: Derecho en una universidad específica?";
         }
 
-        return "{$studentName}, para financiar estudios superiores en Chile existen beneficios como gratuidad, becas y créditos, pero no conviene asumir que aplican automáticamente.
+        return "{$studentName}, para financiar estudios superiores en Chile existen beneficios como gratuidad, becas y créditos.
 
-El FUAS es el Formulario Único de Acreditación Socioeconómica. Sirve para postular a beneficios estudiantiles como:
-- Gratuidad.
-- Becas de arancel.
-- Créditos estudiantiles.
-- Otros apoyos definidos por Mineduc según el proceso vigente.
+Lo principal:
+- El FUAS es el Formulario Único de Acreditación Socioeconómica.
+- Sirve para postular a gratuidad, becas y créditos.
+- La gratuidad no es automática.
+- Debes cumplir requisitos socioeconómicos.
+- También importa la institución, carrera, modalidad y condiciones definidas por Mineduc.
 
-Puntos importantes:
-- La gratuidad no es automática para todos.
-- Depende de requisitos socioeconómicos.
-- También depende de la institución, la carrera, el nivel de estudios y las condiciones definidas por Mineduc.
-- Las fechas, requisitos y resultados pueden cambiar cada año.
+Si quieres una respuesta más concreta, dime:
+1. Qué carrera quieres estudiar.
+2. En qué institución.
+3. Si ya sabes si perteneces al 60% de menores ingresos.
+4. Si quieres universidad, instituto profesional o CFT.
 
-Para revisar información oficial, usa:
-- Beneficios Estudiantiles Mineduc.
-- FUAS.
-- ChileAtiende.
-- Sitio oficial de la institución donde quieras estudiar.
-
-¿Quieres que revisemos los pasos generales para completar el FUAS o prefieres comparar gratuidad, becas y créditos?";
+Con esos datos podemos revisar una checklist más clara.";
     }
 
     private function isSpecificInstitutionQuestion(string $message): bool

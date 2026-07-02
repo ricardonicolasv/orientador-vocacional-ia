@@ -26,7 +26,8 @@ class ChatController extends Controller
         AiVocationalService $aiVocationalService,
         OpenAiVocationalService $openAiVocationalService,
         GroqVocationalService $groqVocationalService,
-        GeminiVocationalService $geminiVocationalService
+        GeminiVocationalService $geminiVocationalService,
+        SafeVocationalResponseService $safeVocationalResponseService
     ) {
         if ($conversation->status === 'finished') {
             return redirect()
