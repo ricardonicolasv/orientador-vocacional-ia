@@ -282,11 +282,12 @@
                             </div>
 
                             <div class="flex flex-col sm:flex-row gap-2">
+                                <!--
                                 <a href="{{ route('chat.show', $conversation) }}"
                                     class="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
                                     Ver chat
                                 </a>
-
+                                -->
                                 @if($report)
                                 <a href="{{ route('orientador.reports.show', $report) }}"
                                     class="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
