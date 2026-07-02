@@ -278,6 +278,69 @@ Para revisar bien, busca estos datos:
     {
         $studentName = $conversation->student->name ?? 'estudiante';
 
+        $conversation->load('messages');
+
+        $studentText = $conversation->messages
+            ->where('sender', 'student')
+            ->pluck('content')
+            ->implode(' ');
+
+        $normalizedText = $this->normalize($studentText);
+
+        if (
+            str_contains($normalizedText, 'psicologia') ||
+            str_contains($normalizedText, 'trabajo social') ||
+            str_contains($normalizedText, 'educacion especial') ||
+            str_contains($normalizedText, 'educacion diferencial') ||
+            str_contains($normalizedText, 'ninos') ||
+            str_contains($normalizedText, 'niños') ||
+            str_contains($normalizedText, 'ayudar a las personas')
+        ) {
+            return "Perfecto, {$studentName}. Según lo que ya mencionaste, conviene comparar carreras relacionadas con apoyo a personas, niños, familia, educación y área social.
+
+Podríamos comparar estas opciones:
+
+1. Psicología
+- Enfoque: conducta humana, emociones, desarrollo, salud mental y acompañamiento.
+- Ruta habitual: universitaria.
+- Puede vincularse a infancia, educación, familia o clínica, según especialización.
+
+2. Trabajo Social / Servicio Social
+- Enfoque: apoyo a personas, familias y comunidades.
+- Ruta posible: universidad o instituto profesional, según la carrera e institución.
+- Puede vincularse a infancia, programas sociales, colegios, municipios o fundaciones.
+
+3. Educación Diferencial / Educación Especial
+- Enfoque: apoyo educativo a estudiantes con necesidades educativas especiales.
+- Ruta habitual: universitaria o programas afines según institución.
+- Muy relacionada con trabajo con niños y contexto escolar.
+
+4. Psicopedagogía
+- Enfoque: apoyo en procesos de aprendizaje.
+- Ruta posible: instituto profesional o universidad, según oferta vigente.
+- Puede servir si te interesa ayudar a niños con dificultades de aprendizaje.
+
+5. Terapia Ocupacional
+- Enfoque: apoyar la autonomía y desarrollo de personas en actividades cotidianas.
+- Ruta habitual: universitaria.
+- Puede relacionarse con infancia, inclusión, salud y rehabilitación.
+
+Para compararlas bien, revisa:
+- Duración.
+- Malla curricular.
+- Campo laboral.
+- Tipo de institución.
+- Requisitos de admisión.
+- Acreditación.
+- Arancel.
+- Prácticas profesionales.
+- Cuánto trabajo directo tienen con niños o familias.
+
+Como mencionaste que matemática y física te cuestan, también conviene revisar cuánto peso tienen esas áreas en cada malla.
+
+¿Quieres que comparemos Psicología, Trabajo Social y Educación Diferencial primero?";
+        }
+
         return "Perfecto, {$studentName}. Para comparar carreras de forma ordenada, primero necesitamos cruzar tus intereses con el tipo de formación que prefieres.
 
 Podemos comparar carreras usando estos criterios:

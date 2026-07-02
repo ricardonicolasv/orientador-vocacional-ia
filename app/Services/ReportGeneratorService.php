@@ -16,8 +16,11 @@ class ReportGeneratorService
             ->pluck('content')
             ->implode(' ');
 
-        $detectedAreas = $this->detectAreas($studentMessages);
-        $clarityLevel = $this->estimateClarityLevel($studentMessages, $conversation->selected_route);
+        $normalizedText = $this->normalize($studentMessages);
+
+        $detectedAreas = $this->detectAreas($normalizedText);
+        $difficulties = $this->detectDifficulties($normalizedText);
+        $clarityLevel = $this->estimateClarityLevel($normalizedText, $conversation->selected_route);
 
         return VocationalReport::updateOrCreate(
             [
@@ -25,14 +28,14 @@ class ReportGeneratorService
                 'conversation_id' => $conversation->id,
             ],
             [
-                'interests' => $this->extractInterests($studentMessages),
+                'interests' => $this->extractInterests($studentMessages, $detectedAreas, $difficulties),
                 'detected_areas' => implode(', ', $detectedAreas),
                 'explored_routes' => $this->formatRoute($conversation->selected_route),
-                'main_questions' => $this->extractMainQuestions($studentMessages),
+                'main_questions' => $this->extractMainQuestions($normalizedText),
                 'clarity_level' => $clarityLevel,
-                'recommendations' => $this->buildRecommendations($detectedAreas, $conversation->selected_route),
-                'student_summary' => $this->buildStudentSummary($conversation, $detectedAreas, $clarityLevel),
-                'orientador_notes' => $this->buildOrientadorNotes($conversation, $detectedAreas, $clarityLevel),
+                'recommendations' => $this->buildRecommendations($detectedAreas, $difficulties, $conversation->selected_route),
+                'student_summary' => $this->buildStudentSummary($conversation, $detectedAreas, $difficulties, $clarityLevel),
+                'orientador_notes' => $this->buildOrientadorNotes($conversation, $detectedAreas, $difficulties, $clarityLevel),
             ]
         );
     }
@@ -50,8 +53,6 @@ class ReportGeneratorService
 
     private function detectAreas(string $text): array
     {
-        $text = $this->normalize($text);
-
         $areas = [];
         $negativeContext = $this->detectNegativeContext($text);
 
@@ -69,6 +70,8 @@ class ReportGeneratorService
                 'datos',
                 'robotica',
                 'inteligencia artificial',
+                'ia',
+                'sistemas',
             ],
             'Matemáticas, física e ingeniería' => [
                 'matematica',
@@ -77,9 +80,12 @@ class ReportGeneratorService
                 'calculo',
                 'numeros',
                 'ingenieria',
+                'industrial',
+                'procesos',
                 'mecanica',
                 'electronica',
                 'electricidad',
+                'estadistica',
             ],
             'Biología, salud y ciencias' => [
                 'biologia',
@@ -93,6 +99,7 @@ class ReportGeneratorService
                 'biotecnologia',
                 'animales',
                 'naturaleza',
+                'terapia ocupacional',
             ],
             'Arte, música, cultura y creatividad' => [
                 'arte',
@@ -113,23 +120,29 @@ class ReportGeneratorService
                 'danza',
                 'manualidades',
                 'creatividad',
+                'comunicacion audiovisual',
             ],
             'Área social, psicología y trabajo con personas' => [
                 'personas',
                 'ayudar',
                 'social',
                 'psicologia',
+                'psicologia infantil',
                 'comportamiento humano',
                 'trastornos mentales',
                 'salud mental',
-                'filosofia',
-                'lenguaje',
+                'familia',
+                'terapia familiar',
+                'apoyo familiar',
                 'trabajo social',
+                'servicio social',
                 'comunicacion',
                 'atender',
                 'orientar',
+                'escuchar',
+                'comprender a las personas',
             ],
-            'Educación y pedagogía' => [
+            'Educación, pedagogía y trabajo con niños' => [
                 'educacion',
                 'profesor',
                 'profesora',
@@ -137,8 +150,29 @@ class ReportGeneratorService
                 'ensenar',
                 'enseñar',
                 'niños',
+                'ninos',
                 'jovenes',
                 'colegio',
+                'educacion especial',
+                'educacion diferencial',
+                'psicopedagogia',
+                'parvularia',
+                'educacion parvularia',
+            ],
+            'Administración, negocios y gestión' => [
+                'administracion',
+                'negocios',
+                'empresa',
+                'gestion',
+                'finanzas',
+                'contabilidad',
+                'logistica',
+                'produccion',
+                'recursos humanos',
+                'emprendimiento',
+                'liderazgo',
+                'proyectos',
+                'industrial',
             ],
             'Fuerzas Armadas, Orden y Seguridad Pública' => [
                 'carabineros',
@@ -161,6 +195,7 @@ class ReportGeneratorService
                 'financiamiento',
                 'arancel',
                 'dinero',
+                'beneficios',
             ],
         ];
 
@@ -177,7 +212,7 @@ class ReportGeneratorService
             }
         }
 
-        return array_unique($areas) ?: ['Exploración vocacional general'];
+        return array_values(array_unique($areas)) ?: ['Exploración vocacional general'];
     }
 
     private function detectNegativeContext(string $text): array
@@ -192,20 +227,18 @@ class ReportGeneratorService
                 'me cuesta matematicas',
                 'me cuesta mucho la matematica',
                 'me cuesta mucho matematica',
-                'me cuesta mucho las matematicas',
-                'me cuesta mucho matematicas',
-                'se me hace dificil matematica',
-                'se me hacen dificiles las matematicas',
-                'no me gusta matematica',
-                'no me gustan las matematicas',
-                'odio matematica',
-                'odio matematicas',
                 'me cuesta fisica',
                 'me cuesta la fisica',
                 'me cuesta mucho fisica',
                 'me cuesta mucho la fisica',
+                'se me hace dificil matematica',
+                'se me hacen dificiles las matematicas',
                 'se me hace dificil fisica',
+                'no me gusta matematica',
+                'no me gustan las matematicas',
                 'no me gusta fisica',
+                'odio matematica',
+                'odio matematicas',
                 'odio fisica',
             ],
             'Tecnología, computación e informática' => [
@@ -229,7 +262,7 @@ class ReportGeneratorService
                 'no me interesa musica',
                 'no me interesa el arte',
             ],
-            'Educación y pedagogía' => [
+            'Educación, pedagogía y trabajo con niños' => [
                 'no me gusta ensenar',
                 'no me gusta enseñar',
                 'no me interesa ensenar',
@@ -257,10 +290,59 @@ class ReportGeneratorService
         return in_array($area, $negativeContext, true);
     }
 
+    private function detectDifficulties(string $text): array
+    {
+        $difficulties = [];
+
+        $patterns = [
+            'Matemática' => [
+                'me cuesta matematica',
+                'me cuesta la matematica',
+                'me cuestan las matematicas',
+                'se me hace dificil matematica',
+                'no me gusta matematica',
+                'no me gustan las matematicas',
+            ],
+            'Física' => [
+                'me cuesta fisica',
+                'me cuesta la fisica',
+                'se me hace dificil fisica',
+                'no me gusta fisica',
+            ],
+            'Programación o informática' => [
+                'me cuesta programar',
+                'no me gusta programar',
+                'me cuesta informatica',
+                'no me gusta informatica',
+            ],
+            'Biología o ciencias de la salud' => [
+                'me cuesta biologia',
+                'no me gusta biologia',
+                'no me interesa salud',
+            ],
+            'Pedagogía o enseñanza' => [
+                'no quiero ser profesor',
+                'no quiero ser profesora',
+                'no me gusta pedagogia',
+                'no me gusta ensenar',
+                'no me gusta enseñar',
+            ],
+        ];
+
+        foreach ($patterns as $difficulty => $difficultyPatterns) {
+            foreach ($difficultyPatterns as $pattern) {
+                if (str_contains($text, $pattern)) {
+                    $difficulties[] = $difficulty;
+                    break;
+                }
+            }
+        }
+
+        return array_values(array_unique($difficulties));
+    }
+
     private function estimateClarityLevel(string $text, ?string $route): string
     {
-        $text = $this->normalize($text);
-
         $uncertaintyIndicators = [
             'no se',
             'no tengo claro',
@@ -271,6 +353,8 @@ class ReportGeneratorService
             'no se aun',
             'estoy indeciso',
             'estoy indecisa',
+            'necesito orientacion',
+            'necesito orientacion paso a paso',
         ];
 
         foreach ($uncertaintyIndicators as $indicator) {
@@ -279,23 +363,26 @@ class ReportGeneratorService
             }
         }
 
-        $careerIndicators = [
-            'ingenieria',
+        $specificCareerIndicators = [
+            'ingenieria industrial',
+            'ingenieria civil informatica',
+            'ingenieria informatica',
+            'informatica',
+            'programacion',
             'medicina',
             'enfermeria',
+            'kinesiologia',
             'psicologia',
+            'trabajo social',
+            'terapia ocupacional',
+            'educacion diferencial',
+            'educacion especial',
             'pedagogia',
-            'informatica',
-            'computacion',
-            'derecho',
-            'arquitectura',
-            'tecnico',
-            'diseño',
             'diseno',
+            'diseño',
             'artes visuales',
             'musica',
             'comunicacion audiovisual',
-            'trabajo social',
             'carabineros',
             'pdi',
             'militar',
@@ -303,56 +390,107 @@ class ReportGeneratorService
 
         $hasSpecificCareer = false;
 
-        foreach ($careerIndicators as $indicator) {
+        foreach ($specificCareerIndicators as $indicator) {
             if (str_contains($text, $indicator)) {
                 $hasSpecificCareer = true;
                 break;
             }
         }
 
-        if ($hasSpecificCareer && $route && $route !== 'no-se-aun') {
+        $hasInstitutionPreference =
+            str_contains($text, 'universidad') ||
+            str_contains($text, 'instituto') ||
+            str_contains($text, 'cft') ||
+            str_contains($text, 'duoc') ||
+            str_contains($text, 'inacap') ||
+            str_contains($text, 'aiep') ||
+            str_contains($text, 'santo tomas');
+
+        if ($hasSpecificCareer && $hasInstitutionPreference) {
             return 'alto';
         }
 
-        if ($route && $route !== 'no-se-aun') {
+        if ($hasSpecificCareer || ($route && $route !== 'no-se-aun')) {
             return 'medio';
         }
 
         return 'bajo';
     }
 
-    private function extractInterests(string $text): string
+    private function extractInterests(string $originalText, array $detectedAreas, array $difficulties): string
     {
-        if (trim($text) === '') {
+        if (trim($originalText) === '') {
             return 'No se registraron intereses suficientes durante la conversación.';
         }
 
-        return 'Intereses y antecedentes mencionados por el estudiante: ' . trim($text);
+        $response = "Intereses y antecedentes mencionados por el estudiante:\n";
+        $response .= trim($originalText);
+
+        if (!empty($detectedAreas)) {
+            $response .= "\n\nÁreas detectadas:\n";
+            foreach ($detectedAreas as $area) {
+                $response .= "- {$area}\n";
+            }
+        }
+
+        if (!empty($difficulties)) {
+            $response .= "\nDificultades o áreas a reforzar mencionadas:\n";
+            foreach ($difficulties as $difficulty) {
+                $response .= "- {$difficulty}\n";
+            }
+        }
+
+        return trim($response);
     }
 
     private function extractMainQuestions(string $text): string
     {
-        $normalized = $this->normalize($text);
+        $questions = [];
 
         if (
-            str_contains($normalized, 'no se') ||
-            str_contains($normalized, 'duda') ||
-            str_contains($normalized, 'no tengo claro') ||
-            str_contains($normalized, 'no tengo carrera') ||
-            str_contains($normalized, 'todavia estoy explorando')
+            str_contains($text, 'no se') ||
+            str_contains($text, 'no tengo claro') ||
+            str_contains($text, 'no tengo carrera') ||
+            str_contains($text, 'necesito orientacion')
         ) {
-            return 'El estudiante manifiesta dudas vocacionales y requiere apoyo para comparar alternativas.';
+            $questions[] = 'El estudiante manifiesta dudas vocacionales y requiere apoyo para comparar alternativas.';
         }
 
         if (
-            str_contains($normalized, 'me cuesta') ||
-            str_contains($normalized, 'se me hace dificil') ||
-            str_contains($normalized, 'no me gusta')
+            str_contains($text, 'fuas') ||
+            str_contains($text, 'beca') ||
+            str_contains($text, 'gratuidad') ||
+            str_contains($text, 'credito') ||
+            str_contains($text, 'financiamiento')
         ) {
-            return 'El estudiante menciona dificultades o áreas que no le resultan cómodas, por lo que conviene diferenciar intereses reales de asignaturas complejas.';
+            $questions[] = 'El estudiante consulta por beneficios, becas, gratuidad, créditos o financiamiento.';
         }
 
-        return 'Durante esta conversación inicial no se identificaron dudas explícitas, pero se recomienda profundizar en intereses, requisitos y alternativas de estudio.';
+        if (
+            str_contains($text, 'universidad') ||
+            str_contains($text, 'instituto') ||
+            str_contains($text, 'cft') ||
+            str_contains($text, 'aiep') ||
+            str_contains($text, 'duoc') ||
+            str_contains($text, 'inacap') ||
+            str_contains($text, 'santo tomas')
+        ) {
+            $questions[] = 'El estudiante muestra interés en comparar instituciones o rutas formativas.';
+        }
+
+        if (
+            str_contains($text, 'me cuesta') ||
+            str_contains($text, 'se me hace dificil') ||
+            str_contains($text, 'no me gusta')
+        ) {
+            $questions[] = 'El estudiante menciona dificultades académicas o áreas que no le resultan cómodas.';
+        }
+
+        if (empty($questions)) {
+            return 'Durante esta conversación inicial no se identificaron dudas explícitas, pero se recomienda profundizar en intereses, requisitos y alternativas de estudio.';
+        }
+
+        return implode("\n", array_map(fn($item) => '- ' . $item, $questions));
     }
 
     private function formatRoute(?string $route): string
@@ -368,83 +506,107 @@ class ReportGeneratorService
         };
     }
 
-    private function buildRecommendations(array $areas, ?string $route): string
+    private function buildRecommendations(array $areas, array $difficulties, ?string $route): string
     {
         $recommendations = [];
 
         $recommendations[] = 'Conversar con el orientador del colegio para profundizar el análisis vocacional.';
-        $recommendations[] = 'Revisar mallas curriculares de las carreras de interés.';
-        $recommendations[] = 'Comparar duración, requisitos, campo laboral, empleabilidad e ingresos referenciales cuando existan datos oficiales.';
-        $recommendations[] = 'Verificar acreditación institucional y de carrera cuando corresponda.';
+        $recommendations[] = 'Revisar mallas curriculares, duración, campo laboral, aranceles y acreditación de las carreras de interés.';
+        $recommendations[] = 'Verificar información oficial antes de tomar decisiones sobre admisión, beneficios o instituciones.';
 
         if ($route === 'universidad') {
-            $recommendations[] = 'Revisar requisitos de admisión, PAES, NEM, Ranking y ponderaciones en fuentes oficiales.';
+            $recommendations[] = 'Revisar PAES, NEM, Ranking, ponderaciones, vacantes y requisitos oficiales de cada carrera.';
         }
 
         if ($route === 'tecnico-profesional') {
-            $recommendations[] = 'Comparar alternativas en institutos profesionales y centros de formación técnica.';
-            $recommendations[] = 'Evaluar continuidad de estudios y salida laboral.';
+            $recommendations[] = 'Comparar institutos profesionales y CFT según modalidad, sede, duración, continuidad de estudios y empleabilidad.';
         }
 
         if ($route === 'beneficios-fuas') {
-            $recommendations[] = 'Revisar fechas, requisitos y postulación FUAS en canales oficiales del Mineduc.';
+            $recommendations[] = 'Revisar FUAS, gratuidad, becas y créditos en fuentes oficiales del Mineduc y ChileAtiende.';
         }
 
         if ($route === 'pedagogia') {
-            $recommendations[] = 'Revisar requisitos específicos para estudiar pedagogía y acreditación de la carrera.';
-            $recommendations[] = 'Explorar pedagogías relacionadas con las áreas de mayor interés, no solo pedagogías tradicionales.';
-        }
-
-        if ($route === 'ffaa-orden') {
-            $recommendations[] = 'Revisar requisitos de edad, salud, condición física, antecedentes y etapas de postulación en cada institución.';
+            $recommendations[] = 'Revisar vocación docente, requisitos específicos de pedagogía y acreditación de la carrera.';
         }
 
         if (in_array('Tecnología, computación e informática', $areas)) {
-            $recommendations[] = 'Explorar carreras como Informática, Computación, Ciencia de Datos, Automatización o áreas tecnológicas.';
+            $recommendations[] = 'Explorar carreras como Informática, Programación, Ciencia de Datos, Computación o áreas tecnológicas.';
         }
 
         if (in_array('Matemáticas, física e ingeniería', $areas)) {
-            $recommendations[] = 'Explorar carreras de ingeniería, física aplicada, tecnología industrial o áreas cuantitativas, siempre contrastando con el rendimiento e interés real del estudiante.';
+            $recommendations[] = 'Explorar carreras de ingeniería, estadística, procesos, industrial o áreas cuantitativas, contrastando con rendimiento e interés real.';
         }
 
         if (in_array('Biología, salud y ciencias', $areas)) {
-            $recommendations[] = 'Explorar carreras de salud, laboratorio, biotecnología o ciencias biológicas.';
+            $recommendations[] = 'Explorar carreras de salud, laboratorio, ciencias biológicas o terapia ocupacional.';
         }
 
         if (in_array('Arte, música, cultura y creatividad', $areas)) {
-            $recommendations[] = 'Explorar carreras vinculadas a diseño, artes visuales, música, comunicación audiovisual, producción cultural o pedagogía artística.';
+            $recommendations[] = 'Explorar carreras vinculadas a diseño, artes visuales, música, comunicación audiovisual o gestión cultural.';
         }
 
         if (in_array('Área social, psicología y trabajo con personas', $areas)) {
-            $recommendations[] = 'Explorar carreras como Psicología, Trabajo Social, Terapia Ocupacional, Comunicación o áreas de acompañamiento a personas.';
+            $recommendations[] = 'Explorar Psicología, Trabajo Social, Terapia Ocupacional, Servicio Social u orientación familiar.';
         }
 
-        if (in_array('Educación y pedagogía', $areas)) {
-            $recommendations[] = 'Explorar pedagogías relacionadas con intereses concretos del estudiante, como Artes, Música, Lenguaje, Inglés, Educación Básica o Educación Diferencial.';
+        if (in_array('Educación, pedagogía y trabajo con niños', $areas)) {
+            $recommendations[] = 'Explorar Educación Diferencial, Educación Especial, Psicopedagogía, Educación Parvularia o pedagogías afines.';
+        }
+
+        if (in_array('Administración, negocios y gestión', $areas)) {
+            $recommendations[] = 'Explorar Administración, Logística, Gestión de Personas, Ingeniería Industrial o carreras del área de negocios.';
+        }
+
+        if (!empty($difficulties)) {
+            $recommendations[] = 'Considerar las asignaturas o áreas que el estudiante menciona como difíciles para definir apoyos o rutas alternativas.';
         }
 
         return implode("\n", array_map(fn($item) => '- ' . $item, $recommendations));
     }
 
-    private function buildStudentSummary(Conversation $conversation, array $areas, string $clarityLevel): string
-    {
+    private function buildStudentSummary(
+        Conversation $conversation,
+        array $areas,
+        array $difficulties,
+        string $clarityLevel
+    ): string {
         $studentName = $conversation->student->name;
 
-        return "Resumen para {$studentName}:\n\n"
-            . "Durante esta conversación se identificaron intereses o antecedentes relacionados con:\n"
-            . implode("\n", array_map(fn($area) => '- ' . $area, $areas))
-            . "\n\nNivel de claridad vocacional estimado: {$clarityLevel}.\n\n"
-            . "Este resultado no define tu decisión final, pero sirve como punto de partida para seguir explorando carreras, instituciones, requisitos de admisión y beneficios estudiantiles.";
+        $summary = "Resumen para {$studentName}:\n\n";
+        $summary .= "Durante la conversación se identificaron intereses o antecedentes relacionados con:\n";
+        $summary .= implode("\n", array_map(fn($area) => '- ' . $area, $areas));
+
+        if (!empty($difficulties)) {
+            $summary .= "\n\nTambién se mencionaron áreas que podrían requerir refuerzo o revisión:\n";
+            $summary .= implode("\n", array_map(fn($difficulty) => '- ' . $difficulty, $difficulties));
+        }
+
+        $summary .= "\n\nNivel de claridad vocacional estimado: {$clarityLevel}.\n\n";
+        $summary .= "Este resultado no define una decisión final, pero sirve como punto de partida para comparar carreras, instituciones, requisitos de admisión y beneficios estudiantiles.";
+
+        return $summary;
     }
 
-    private function buildOrientadorNotes(Conversation $conversation, array $areas, string $clarityLevel): string
-    {
-        return "Notas para el orientador:\n\n"
-            . "- Revisar conversación completa del estudiante.\n"
-            . "- Diferenciar intereses declarados de asignaturas que el estudiante menciona como difíciles.\n"
-            . "- Profundizar en intereses, rendimiento académico, expectativas familiares y opciones reales de acceso.\n"
-            . "- Nivel de claridad vocacional estimado: {$clarityLevel}.\n"
-            . "- Áreas detectadas: " . implode(', ', $areas) . ".\n"
-            . "- Se recomienda seguimiento individual si el estudiante mantiene dudas amplias o no identifica rutas concretas.";
+    private function buildOrientadorNotes(
+        Conversation $conversation,
+        array $areas,
+        array $difficulties,
+        string $clarityLevel
+    ): string {
+        $notes = "Notas para el orientador:\n\n";
+        $notes .= "- Revisar conversación completa del estudiante.\n";
+        $notes .= "- Diferenciar intereses declarados de asignaturas que el estudiante menciona como difíciles.\n";
+        $notes .= "- Profundizar en intereses, rendimiento académico, expectativas familiares y opciones reales de acceso.\n";
+        $notes .= "- Nivel de claridad vocacional estimado: {$clarityLevel}.\n";
+        $notes .= "- Áreas detectadas: " . implode(', ', $areas) . ".\n";
+
+        if (!empty($difficulties)) {
+            $notes .= "- Dificultades mencionadas: " . implode(', ', $difficulties) . ".\n";
+        }
+
+        $notes .= "- Se recomienda seguimiento individual si el estudiante mantiene dudas amplias o no identifica rutas concretas.";
+
+        return $notes;
     }
 }

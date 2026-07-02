@@ -83,8 +83,6 @@ class OrientadorDashboardController extends Controller
         |--------------------------------------------------------------------------
         | Estadísticas según filtros
         |--------------------------------------------------------------------------
-        | Se calculan antes de paginar para contar todos los estudiantes filtrados,
-        | no solo los 10 estudiantes visibles en la página actual.
         */
 
         $filteredStudentIds = (clone $studentsQuery)
@@ -132,7 +130,6 @@ class OrientadorDashboardController extends Controller
         |--------------------------------------------------------------------------
         | Lista paginada
         |--------------------------------------------------------------------------
-        | Esta consulta se pagina solo después de calcular estadísticas.
         */
 
         $students = $studentsQuery

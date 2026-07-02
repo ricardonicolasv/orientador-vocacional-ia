@@ -5,22 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orientador Vocacional IA</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-orientador-vocacional-ia.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="min-h-screen bg-slate-50 text-slate-800">
     <main class="min-h-screen flex items-center justify-center px-6 py-10">
-        <section class="max-w-5xl w-full grid md:grid-cols-2 gap-8 items-center">
+        <section class="max-w-6xl w-full grid md:grid-cols-2 gap-10 items-center">
             <div>
                 <span class="inline-flex items-center rounded-full bg-green-100 px-4 py-1 text-sm font-medium text-green-700">
                     Instituto San José
                 </span>
 
-                <h1 class="mt-6 text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
-                    Orientador Vocacional IA
-                </h1>
+                <div class="mt-6">
+                    <img src="{{ asset('images/logo-orientador-vocacional-ia.png') }}"
+                        alt="Logo Orientador Vocacional IA"
+                        class="h-36 md:h-44 w-auto object-contain">
+                </div>
 
-                <p class="mt-5 text-lg text-slate-600 leading-relaxed">
+                <p class="mt-6 text-lg text-slate-600 leading-relaxed max-w-xl">
                     Una plataforma de apoyo para estudiantes de enseñanza media que desean explorar carreras,
                     instituciones, beneficios estudiantiles y posibles caminos después de 4° medio.
                 </p>
@@ -42,12 +45,27 @@
                     </a>
                 </div>
 
-                <p class="mt-6 text-sm text-slate-500">
+                <p class="mt-6 text-sm text-slate-500 max-w-xl">
                     La información entregada es orientativa y no reemplaza la entrevista con el orientador del colegio.
                 </p>
             </div>
 
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="{{ asset('images/logo.png') }}"
+                        alt="Logo Orientador Vocacional IA"
+                        class="h-12 w-12 rounded-2xl object-contain bg-white">
+
+                    <div>
+                        <p class="text-sm font-bold text-slate-900">
+                            Chat vocacional
+                        </p>
+                        <p class="text-xs text-slate-500">
+                            Orientación inicial asistida por IA
+                        </p>
+                    </div>
+                </div>
+
                 <div class="space-y-4">
                     <div class="flex justify-start">
                         <div class="max-w-xs rounded-2xl rounded-bl-sm bg-slate-100 px-4 py-3 text-sm text-slate-700">
