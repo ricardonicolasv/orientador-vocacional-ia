@@ -7,6 +7,8 @@ use App\Models\Message;
 use App\Services\AiVocationalService;
 use App\Services\OpenAiVocationalService;
 use App\Services\GroqVocationalService;
+use App\Services\GeminiVocationalService;
+use App\Services\SafeVocationalResponseService;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -23,7 +25,8 @@ class ChatController extends Controller
         Conversation $conversation,
         AiVocationalService $aiVocationalService,
         OpenAiVocationalService $openAiVocationalService,
-        GroqVocationalService $groqVocationalService
+        GroqVocationalService $groqVocationalService,
+        GeminiVocationalService $geminiVocationalService
     ) {
         if ($conversation->status === 'finished') {
             return redirect()
@@ -47,11 +50,21 @@ class ChatController extends Controller
 
         $aiMode = config('ai.mode', 'local');
 
-        $aiResponse = match ($aiMode) {
-            'openai' => $openAiVocationalService->generateResponse($conversation, $validated['content']),
-            'groq' => $groqVocationalService->generateResponse($conversation, $validated['content']),
-            default => $aiVocationalService->generateResponse($conversation, $validated['content']),
-        };
+        $safeResponse = $safeVocationalResponseService->generateIfApplies(
+            $conversation,
+            $validated['content']
+        );
+
+        if ($safeResponse) {
+            $aiResponse = $safeResponse;
+        } else {
+            $aiResponse = match ($aiMode) {
+                'openai' => $openAiVocationalService->generateResponse($conversation, $validated['content']),
+                'groq' => $groqVocationalService->generateResponse($conversation, $validated['content']),
+                'gemini' => $geminiVocationalService->generateResponse($conversation, $validated['content']),
+                default => $aiVocationalService->generateResponse($conversation, $validated['content']),
+            };
+        }
 
         Message::create([
             'conversation_id' => $conversation->id,
