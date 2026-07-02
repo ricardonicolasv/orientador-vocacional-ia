@@ -39,7 +39,16 @@ class ReportGeneratorService
             ]
         );
     }
+    private function containsKeyword(string $text, string $keyword): bool
+    {
+        $keyword = $this->normalize($keyword);
 
+        if (str_contains($keyword, ' ')) {
+            return str_contains($text, $keyword);
+        }
+
+        return preg_match('/\b' . preg_quote($keyword, '/') . '\b/u', $text) === 1;
+    }
     private function normalize(string $text): string
     {
         $text = mb_strtolower($text);
@@ -65,12 +74,10 @@ class ReportGeneratorService
                 'informatica',
                 'software',
                 'hardware',
-                'pc',
                 'videojuegos',
                 'datos',
                 'robotica',
                 'inteligencia artificial',
-                'ia',
                 'sistemas',
             ],
             'Matemáticas, física e ingeniería' => [
@@ -197,11 +204,29 @@ class ReportGeneratorService
                 'dinero',
                 'beneficios',
             ],
+            'Derecho, ciencias políticas y gestión pública' => [
+                'derecho',
+                'ciencias politicas',
+                'politica',
+                'politico',
+                'politicos',
+                'politicas publicas',
+                'cargo publico',
+                'administracion publica',
+                'gestion publica',
+                'estado',
+                'gobierno',
+                'municipalidad',
+                'servicio publico',
+                'leyes',
+                'legislacion',
+                'relaciones internacionales',
+            ],
         ];
 
         foreach ($keywords as $area => $words) {
             foreach ($words as $word) {
-                if (str_contains($text, $word)) {
+                if ($this->containsKeyword($text, $word)) {
                     if ($this->shouldIgnoreAreaBecauseOfDifficulty($area, $negativeContext)) {
                         continue;
                     }
@@ -343,26 +368,6 @@ class ReportGeneratorService
 
     private function estimateClarityLevel(string $text, ?string $route): string
     {
-        $uncertaintyIndicators = [
-            'no se',
-            'no tengo claro',
-            'no tengo carrera',
-            'no tengo una carrera',
-            'todavia estoy explorando',
-            'aun no se',
-            'no se aun',
-            'estoy indeciso',
-            'estoy indecisa',
-            'necesito orientacion',
-            'necesito orientacion paso a paso',
-        ];
-
-        foreach ($uncertaintyIndicators as $indicator) {
-            if (str_contains($text, $indicator)) {
-                return 'bajo';
-            }
-        }
-
         $specificCareerIndicators = [
             'ingenieria industrial',
             'ingenieria civil informatica',
@@ -386,31 +391,63 @@ class ReportGeneratorService
             'carabineros',
             'pdi',
             'militar',
+            'derecho',
+            'ciencias politicas',
+            'administracion publica',
+            'gestion publica',
+            'cargo publico',
+            'politica',
+            'politicas publicas',
         ];
 
         $hasSpecificCareer = false;
 
         foreach ($specificCareerIndicators as $indicator) {
-            if (str_contains($text, $indicator)) {
+            if ($this->containsKeyword($text, $indicator)) {
                 $hasSpecificCareer = true;
                 break;
             }
         }
 
         $hasInstitutionPreference =
-            str_contains($text, 'universidad') ||
-            str_contains($text, 'instituto') ||
-            str_contains($text, 'cft') ||
-            str_contains($text, 'duoc') ||
-            str_contains($text, 'inacap') ||
-            str_contains($text, 'aiep') ||
-            str_contains($text, 'santo tomas');
+            $this->containsKeyword($text, 'universidad') ||
+            $this->containsKeyword($text, 'instituto') ||
+            $this->containsKeyword($text, 'cft') ||
+            $this->containsKeyword($text, 'duoc') ||
+            $this->containsKeyword($text, 'inacap') ||
+            $this->containsKeyword($text, 'aiep') ||
+            str_contains($text, 'santo tomas') ||
+            str_contains($text, 'concepcion');
 
         if ($hasSpecificCareer && $hasInstitutionPreference) {
             return 'alto';
         }
 
-        if ($hasSpecificCareer || ($route && $route !== 'no-se-aun')) {
+        if ($hasSpecificCareer) {
+            return 'medio';
+        }
+
+        $uncertaintyIndicators = [
+            'no se',
+            'no tengo claro',
+            'no tengo carrera',
+            'no tengo una carrera',
+            'todavia estoy explorando',
+            'aun no se',
+            'no se aun',
+            'estoy indeciso',
+            'estoy indecisa',
+            'necesito orientacion',
+            'necesito orientacion paso a paso',
+        ];
+
+        foreach ($uncertaintyIndicators as $indicator) {
+            if (str_contains($text, $indicator)) {
+                return 'bajo';
+            }
+        }
+
+        if ($route && $route !== 'no-se-aun') {
             return 'medio';
         }
 
@@ -556,6 +593,9 @@ class ReportGeneratorService
 
         if (in_array('Administración, negocios y gestión', $areas)) {
             $recommendations[] = 'Explorar Administración, Logística, Gestión de Personas, Ingeniería Industrial o carreras del área de negocios.';
+        }
+        if (in_array('Derecho, ciencias políticas y gestión pública', $areas)) {
+            $recommendations[] = 'Explorar Derecho, Ciencias Políticas, Administración Pública, Gestión Pública o carreras vinculadas al Estado y políticas públicas.';
         }
 
         if (!empty($difficulties)) {
