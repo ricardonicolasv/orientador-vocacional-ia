@@ -35,8 +35,8 @@ class GeminiVocationalService
                     ],
                     'contents' => $this->buildContents($conversation, $studentMessage),
                     'generationConfig' => [
-                        'temperature' => 0.2,
-                        'maxOutputTokens' => 500,
+                        'temperature' => 0.3,
+                        'maxOutputTokens' => 900,
                     ],
                 ]);
 
@@ -58,9 +58,24 @@ class GeminiVocationalService
             }
 
             $content = trim($response->json('candidates.0.content.parts.0.text') ?? '');
+            $finishReason = $response->json('candidates.0.finishReason');
 
             if (!$content) {
-                return 'No pude generar una respuesta clara en este momento.';
+                Log::warning('Gemini empty response', [
+                    'finish_reason' => $finishReason,
+                    'body' => $response->json(),
+                ]);
+
+                return 'No pude generar una respuesta clara en este momento. Intenta reformular tu pregunta o consulta con el orientador.';
+            }
+
+            if ($finishReason === 'MAX_TOKENS') {
+                Log::warning('Gemini response truncated by max tokens', [
+                    'finish_reason' => $finishReason,
+                    'content' => $content,
+                ]);
+
+                return $this->completeTruncatedResponseFallback($conversation);
             }
 
             return $this->limitResponseLength($content);
@@ -71,6 +86,31 @@ class GeminiVocationalService
 
             return 'Ocurrió un problema al conectar con Gemini. Intenta nuevamente más tarde.';
         }
+    }
+
+    private function completeTruncatedResponseFallback(Conversation $conversation): string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+
+        return "{$studentName}, con lo que mencionas puedo orientarte de forma inicial.
+
+Tus intereses apuntan a áreas relacionadas con:
+- Actividad física y deporte.
+- Naturaleza y aire libre.
+- Exploración, trekking y contacto con paisajes.
+- Turismo aventura, ecoturismo o actividades en terreno.
+
+Podrías explorar alternativas como:
+1. Pedagogía en Educación Física.
+2. Preparador físico o entrenamiento deportivo.
+3. Turismo aventura o ecoturismo.
+4. Guía de actividades al aire libre.
+5. Gestión de áreas naturales o conservación.
+6. Carreras vinculadas a seguridad, rescate o trabajo en terreno, si te interesa esa línea.
+
+Para seguir orientándote mejor, responde:
+- ¿Te gustaría trabajar guiando personas en actividades al aire libre?
+- ¿Prefieres algo deportivo, turístico, educativo o relacionado con naturaleza y conservación?";
     }
 
     private function buildContents(Conversation $conversation, string $studentMessage): array
