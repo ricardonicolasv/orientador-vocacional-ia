@@ -464,6 +464,93 @@ Con eso puedo ayudarte a comparar 2 o 3 caminos concretos.";
     {
         $studentName = $conversation->student->name ?? 'estudiante';
 
+        $conversation->load('messages');
+
+        $lastStudentMessage = $conversation->messages
+            ->where('sender', 'student')
+            ->last()
+            ?->content ?? '';
+
+        $message = $this->normalize($lastStudentMessage);
+
+        if (
+            str_contains($message, 'aiep') ||
+            str_contains($message, 'duoc') ||
+            str_contains($message, 'inacap') ||
+            str_contains($message, 'santo tomas') ||
+            str_contains($message, 'instituto') ||
+            str_contains($message, 'universidad') ||
+            str_contains($message, 'cft')
+        ) {
+            return "{$studentName}, para saber si una institución tiene gratuidad o permite acceder a beneficios, hay que revisar información oficial y actualizada.
+
+No conviene asumir que una institución tiene gratuidad solo por ser universidad, instituto profesional o CFT.
+
+Para verificarlo, revisa:
+- Si la institución está adscrita a gratuidad.
+- Si la carrera permite acceder a beneficios.
+- Si cumples los requisitos socioeconómicos definidos por Mineduc.
+- Si completaste el FUAS dentro de las fechas oficiales.
+- El sitio oficial de la institución.
+- Beneficios Estudiantiles Mineduc.
+- FUAS.
+- ChileAtiende.
+
+En el caso de AIEP u otra institución específica, lo más seguro es revisar directamente su sitio oficial y la información de Beneficios Estudiantiles Mineduc.
+
+¿Quieres que armemos una checklist para revisar si una institución permite gratuidad y beneficios?";
+        }
+
+        if (
+            str_contains($message, 'no tengo dinero') ||
+            str_contains($message, 'como puedo pagar') ||
+            str_contains($message, 'pagar la carrera') ||
+            str_contains($message, 'financiar') ||
+            str_contains($message, 'financiamiento')
+        ) {
+            return "{$studentName}, si te preocupa cómo pagar una carrera, lo principal es revisar opciones de financiamiento antes de decidir.
+
+Pasos recomendados:
+1. Completar el FUAS dentro de las fechas oficiales.
+2. Revisar si podrías acceder a gratuidad.
+3. Revisar becas de arancel.
+4. Revisar créditos estudiantiles, si corresponde.
+5. Comparar arancel y matrícula de la carrera.
+6. Confirmar si la institución está adscrita a beneficios.
+7. Revisar información oficial en Beneficios Estudiantiles Mineduc, FUAS y ChileAtiende.
+
+La gratuidad no es automática para todos. Depende de requisitos socioeconómicos, institución, carrera y condiciones definidas por Mineduc.
+
+¿Quieres que revisemos una ruta paso a paso para financiar estudios superiores?";
+        }
+
+        if (
+            str_contains($message, 'derecho') ||
+            str_contains($message, 'psicologia') ||
+            str_contains($message, 'trabajo social') ||
+            str_contains($message, 'pedagogia') ||
+            str_contains($message, 'ingenieria') ||
+            str_contains($message, 'carrera')
+        ) {
+            return "{$studentName}, sí existen beneficios que pueden ayudar a financiar carreras de educación superior, pero no conviene asumir que aplican automáticamente a una carrera específica.
+
+Para una carrera como Derecho u otra carrera profesional, deberías revisar:
+- Si la institución está adscrita a gratuidad.
+- Si la carrera permite acceder a beneficios.
+- Requisitos socioeconómicos.
+- Fechas del FUAS.
+- Becas de arancel disponibles.
+- Créditos estudiantiles.
+- Arancel y matrícula.
+- Duración de la carrera.
+
+El FUAS es el Formulario Único de Acreditación Socioeconómica y sirve para postular a beneficios como gratuidad, becas y créditos.
+
+Te recomiendo revisar fuentes oficiales: Beneficios Estudiantiles Mineduc, FUAS, ChileAtiende y el sitio de la institución donde quieras estudiar.
+
+¿Quieres comparar gratuidad, becas y créditos?";
+        }
+
         return "{$studentName}, para financiar estudios superiores en Chile existen beneficios como gratuidad, becas y créditos, pero no conviene asumir que aplican automáticamente.
 
 El FUAS es el Formulario Único de Acreditación Socioeconómica. Sirve para postular a beneficios estudiantiles como:
@@ -477,22 +564,12 @@ Puntos importantes:
 - Depende de requisitos socioeconómicos.
 - También depende de la institución, la carrera, el nivel de estudios y las condiciones definidas por Mineduc.
 - Las fechas, requisitos y resultados pueden cambiar cada año.
-- No todas las instituciones o carreras necesariamente aplican a los mismos beneficios.
 
 Para revisar información oficial, usa:
 - Beneficios Estudiantiles Mineduc.
 - FUAS.
 - ChileAtiende.
 - Sitio oficial de la institución donde quieras estudiar.
-
-Para avanzar, te recomiendo revisar estos datos:
-1. Si la institución está adscrita a gratuidad.
-2. Si la carrera permite acceder a beneficios.
-3. Fechas oficiales de postulación FUAS.
-4. Requisitos socioeconómicos.
-5. Resultados de nivel socioeconómico.
-6. Opciones de becas y créditos.
-7. Arancel y matrícula de la carrera.
 
 ¿Quieres que revisemos los pasos generales para completar el FUAS o prefieres comparar gratuidad, becas y créditos?";
     }
