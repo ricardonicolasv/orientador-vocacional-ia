@@ -37,8 +37,13 @@ class ReportController extends Controller
         $pdf = Pdf::loadView('reports.pdf', compact('report'))
             ->setPaper('letter', 'portrait');
 
-        $fileName = 'reporte-vocacional-' . str_replace(' ', '-', strtolower($report->student->name)) . '.pdf';
+        $fileName = 'reporte-vocacional-' . $report->id . '.pdf';
 
-        return $pdf->download($fileName);
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Cache-Control' => 'private, max-age=0, must-revalidate',
+            'Pragma' => 'public',
+        ]);
     }
 }
