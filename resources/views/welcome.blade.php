@@ -13,10 +13,11 @@
     <main class="min-h-screen flex items-center justify-center px-6 py-10">
         <section class="max-w-6xl w-full grid md:grid-cols-2 gap-10 items-center">
             <div>
+                <!--
                 <span class="inline-flex items-center rounded-full bg-green-100 px-4 py-1 text-sm font-medium text-green-700">
                     Instituto San José
                 </span>
-
+                -->
                 <div class="mt-6">
                     <img src="{{ asset('images/logo-orientador-vocacional-ia.png') }}"
                         alt="Logo Orientador Vocacional IA"

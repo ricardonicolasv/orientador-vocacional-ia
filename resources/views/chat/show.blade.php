@@ -64,6 +64,10 @@
                             Groq
                             @break
 
+                            @case('gemini')
+                            Gemini
+                            @break
+
                             @default
                             Local
                             @endswitch
