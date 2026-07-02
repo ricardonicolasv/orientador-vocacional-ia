@@ -16,6 +16,10 @@ class GroqVocationalService
             return $this->safeAdmissionRequirementsResponse($conversation);
         }
 
+        if ($this->isStudentBenefitsQuestion($normalizedMessage)) {
+            return $this->safeStudentBenefitsResponse($conversation);
+        }
+
         if ($this->isSpecificInstitutionQuestion($normalizedMessage)) {
             return $this->safeInstitutionResponse($conversation, $normalizedMessage);
         }
@@ -434,6 +438,63 @@ Primero dime cuál de estas áreas te llama más la atención:
 6. Área social, psicología o familia.
 
 Con eso puedo ayudarte a comparar 2 o 3 caminos concretos.";
+    }
+
+    private function isStudentBenefitsQuestion(string $message): bool
+    {
+        return str_contains($message, 'fuas') ||
+            str_contains($message, 'beca') ||
+            str_contains($message, 'becas') ||
+            str_contains($message, 'gratuidad') ||
+            str_contains($message, 'credito') ||
+            str_contains($message, 'creditos') ||
+            str_contains($message, 'cae') ||
+            str_contains($message, 'beneficio') ||
+            str_contains($message, 'beneficios') ||
+            str_contains($message, 'financiamiento') ||
+            str_contains($message, 'arancel') ||
+            str_contains($message, 'matricula') ||
+            str_contains($message, 'como pagar') ||
+            str_contains($message, 'ayuda economica') ||
+            str_contains($message, 'ayuden') ||
+            str_contains($message, 'ayuda para estudiar');
+    }
+
+    private function safeStudentBenefitsResponse(Conversation $conversation): string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+
+        return "{$studentName}, para financiar estudios superiores en Chile existen beneficios como gratuidad, becas y créditos, pero no conviene asumir que aplican automáticamente.
+
+El FUAS es el Formulario Único de Acreditación Socioeconómica. Sirve para postular a beneficios estudiantiles como:
+- Gratuidad.
+- Becas de arancel.
+- Créditos estudiantiles.
+- Otros apoyos definidos por Mineduc según el proceso vigente.
+
+Puntos importantes:
+- La gratuidad no es automática para todos.
+- Depende de requisitos socioeconómicos.
+- También depende de la institución, la carrera, el nivel de estudios y las condiciones definidas por Mineduc.
+- Las fechas, requisitos y resultados pueden cambiar cada año.
+- No todas las instituciones o carreras necesariamente aplican a los mismos beneficios.
+
+Para revisar información oficial, usa:
+- Beneficios Estudiantiles Mineduc.
+- FUAS.
+- ChileAtiende.
+- Sitio oficial de la institución donde quieras estudiar.
+
+Para avanzar, te recomiendo revisar estos datos:
+1. Si la institución está adscrita a gratuidad.
+2. Si la carrera permite acceder a beneficios.
+3. Fechas oficiales de postulación FUAS.
+4. Requisitos socioeconómicos.
+5. Resultados de nivel socioeconómico.
+6. Opciones de becas y créditos.
+7. Arancel y matrícula de la carrera.
+
+¿Quieres que revisemos los pasos generales para completar el FUAS o prefieres comparar gratuidad, becas y créditos?";
     }
 
     private function buildMessages(Conversation $conversation, string $studentMessage): array
