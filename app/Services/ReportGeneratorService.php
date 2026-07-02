@@ -80,10 +80,32 @@ class ReportGeneratorService
                 'inteligencia artificial',
                 'sistemas',
             ],
+            'Deporte, turismo aventura y naturaleza' => [
+                'deporte',
+                'deportes',
+                'educacion fisica',
+                'actividad fisica',
+                'aire libre',
+                'trekking',
+                'incursiones',
+                'senderismo',
+                'explorar',
+                'paisaje',
+                'paisajes',
+                'naturaleza',
+                'turismo aventura',
+                'ecoturismo',
+                'guia turistico',
+                'guia de turismo',
+                'guia de actividades',
+                'actividades al aire libre',
+                'guardaparques',
+                'areas protegidas',
+                'conservacion',
+            ],
             'Matemáticas, física e ingeniería' => [
                 'matematica',
                 'matematicas',
-                'fisica',
                 'calculo',
                 'numeros',
                 'ingenieria',
@@ -398,6 +420,14 @@ class ReportGeneratorService
             'cargo publico',
             'politica',
             'politicas publicas',
+            'turismo aventura',
+            'ecoturismo',
+            'trekking',
+            'aire libre',
+            'naturaleza',
+            'educacion fisica',
+            'guia de turismo',
+            'guardaparques',
         ];
 
         $hasSpecificCareer = false;
@@ -463,6 +493,20 @@ class ReportGeneratorService
         $normalizedText = $this->normalize($originalText);
 
         $interests = [];
+        if (
+            $this->containsKeyword($normalizedText, 'deporte') ||
+            $this->containsKeyword($normalizedText, 'deportes') ||
+            $this->containsKeyword($normalizedText, 'educacion fisica') ||
+            $this->containsKeyword($normalizedText, 'aire libre') ||
+            $this->containsKeyword($normalizedText, 'trekking') ||
+            $this->containsKeyword($normalizedText, 'incursiones') ||
+            $this->containsKeyword($normalizedText, 'paisaje') ||
+            $this->containsKeyword($normalizedText, 'naturaleza') ||
+            $this->containsKeyword($normalizedText, 'turismo aventura') ||
+            $this->containsKeyword($normalizedText, 'ecoturismo')
+        ) {
+            $interests[] = 'Deporte, actividad física, trekking, naturaleza, turismo aventura o ecoturismo.';
+        }
 
         if (
             $this->containsKeyword($normalizedText, 'derecho') ||
@@ -485,6 +529,14 @@ class ReportGeneratorService
             $this->containsKeyword($normalizedText, 'creditos')
         ) {
             $interests[] = 'Beneficios estudiantiles, gratuidad, becas, créditos y financiamiento.';
+        }
+        if (
+            $this->containsKeyword($normalizedText, 'duoc') ||
+            $this->containsKeyword($normalizedText, 'ip') ||
+            $this->containsKeyword($normalizedText, 'cft') ||
+            $this->containsKeyword($normalizedText, 'universidad')
+        ) {
+            $antecedents[] = 'El estudiante quiere comparar rutas formativas como universidad, instituto profesional o CFT.';
         }
 
         if (
@@ -689,6 +741,9 @@ class ReportGeneratorService
         }
         if (in_array('Derecho, ciencias políticas y gestión pública', $areas)) {
             $recommendations[] = 'Explorar Derecho, Ciencias Políticas, Administración Pública, Gestión Pública o carreras vinculadas al Estado y políticas públicas.';
+        }
+        if (in_array('Deporte, turismo aventura y naturaleza', $areas)) {
+            $recommendations[] = 'Explorar Turismo Aventura, Ecoturismo, Guía de Turismo, Gestión de Áreas Naturales, Preparación Física o carreras vinculadas al trabajo en terreno y naturaleza.';
         }
 
         if (!empty($difficulties)) {
