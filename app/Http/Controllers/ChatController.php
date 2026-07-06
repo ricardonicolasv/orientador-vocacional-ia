@@ -9,6 +9,7 @@ use App\Services\OpenAiVocationalService;
 use App\Services\GroqVocationalService;
 use App\Services\GeminiVocationalService;
 use App\Services\SafeVocationalResponseService;
+use App\Services\VocationalScopeGuardService;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -27,7 +28,8 @@ class ChatController extends Controller
         OpenAiVocationalService $openAiVocationalService,
         GroqVocationalService $groqVocationalService,
         GeminiVocationalService $geminiVocationalService,
-        SafeVocationalResponseService $safeVocationalResponseService
+        SafeVocationalResponseService $safeVocationalResponseService,
+        VocationalScopeGuardService $vocationalScopeGuardService,
     ) {
         if ($conversation->status === 'finished') {
             return redirect()
@@ -48,6 +50,18 @@ class ChatController extends Controller
         ]);
 
         $conversation->load(['student', 'messages']);
+
+        $scopeResponse = $vocationalScopeGuardService->generateIfOutOfScope($validated['content']);
+
+        if ($scopeResponse) {
+            Message::create([
+                'conversation_id' => $conversation->id,
+                'sender' => 'ai',
+                'content' => $scopeResponse,
+            ]);
+
+            return redirect()->route('chat.show', $conversation);
+        }
 
         $aiMode = config('ai.mode', 'local');
 
