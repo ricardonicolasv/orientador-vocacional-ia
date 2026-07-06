@@ -40,12 +40,6 @@ class OpenAiVocationalService
                 'max_output_tokens' => self::MAX_OUTPUT_TOKENS,
             ];
 
-            /*
-             * Si el modelo acepta temperature, puedes agregarla.
-             * Si OpenAI responde 400 por parámetro no soportado, elimínala.
-             */
-            $payload['temperature'] = 0.25;
-
             $response = Http::timeout(self::REQUEST_TIMEOUT_SECONDS)
                 ->retry(2, 300)
                 ->withToken($apiKey)
@@ -84,7 +78,7 @@ class OpenAiVocationalService
 
         $messages = $conversation->messages
             ->sortBy('created_at')
-            ->take(-10)
+            ->take(-self::MAX_HISTORY_MESSAGES)
             ->values();
 
         foreach ($messages as $message) {
@@ -128,9 +122,11 @@ class OpenAiVocationalService
 
     private function handleFailedResponse($response): string
     {
+        $body = $response->json();
+
         Log::error('OpenAI API error', [
             'status' => $response->status(),
-            'body' => $this->sanitizeLogPayload($response->json()),
+            'body' => $this->sanitizeLogPayload($body),
         ]);
 
         if (in_array($response->status(), [401, 403], true)) {
@@ -142,7 +138,7 @@ class OpenAiVocationalService
         }
 
         if (app()->environment('local')) {
-            return 'Error OpenAI: ' . $response->status() . ' - ' . json_encode($response->json(), JSON_UNESCAPED_UNICODE);
+            return 'Error OpenAI: ' . $response->status() . ' - ' . json_encode($body, JSON_UNESCAPED_UNICODE);
         }
 
         return 'No pude generar una respuesta con IA en este momento. Intenta nuevamente o consulta con el orientador.';
