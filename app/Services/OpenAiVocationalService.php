@@ -84,7 +84,7 @@ class OpenAiVocationalService
 
         $messages = $conversation->messages
             ->sortBy('created_at')
-            ->take(-self::MAX_HISTORY_MESSAGES)
+            ->take(-10)
             ->values();
 
         foreach ($messages as $message) {
@@ -92,11 +92,13 @@ class OpenAiVocationalService
                 continue;
             }
 
+            $isStudent = $message->sender === 'student';
+
             $input[] = [
-                'role' => $message->sender === 'student' ? 'user' : 'assistant',
+                'role' => $isStudent ? 'user' : 'assistant',
                 'content' => [
                     [
-                        'type' => 'input_text',
+                        'type' => $isStudent ? 'input_text' : 'output_text',
                         'text' => trim($message->content),
                     ],
                 ],
