@@ -59,7 +59,7 @@ class OpenAiVocationalService
                     'body' => $this->sanitizeLogPayload($response->json()),
                 ]);
 
-                return 'No pude generar una respuesta clara en este momento. Intenta reformular tu pregunta o consulta con el orientador.';
+                return 'No pude generar una respuesta completa en este momento. Podemos seguir con una orientación base: dime si quieres comparar universidad, IP, CFT, beneficios/FUAS, pedagogía o Fuerzas Armadas y de Orden.';
             }
 
             return $this->limitResponseLength($content);

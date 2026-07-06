@@ -25,67 +25,18 @@ class SafeVocationalResponseService
         if ($this->isCareerComparisonQuestion($normalizedMessage)) {
             return $this->safeCareerComparisonResponse($conversation);
         }
-        if ($this->isArmedForcesQuestion($studentMessage)) {
-            return $this->safeArmedForcesResponse();
+        $armedForcesResponse = $this->generateArmedForcesResponseIfApplies(
+            $conversation,
+            $normalizedMessage
+        );
+
+        if ($armedForcesResponse) {
+            return $armedForcesResponse;
         }
 
         return null;
     }
-    private function isArmedForcesQuestion(string $message): bool
-    {
-        $text = $this->normalize($message);
 
-        $keywords = [
-            'ffaa',
-            'fuerzas armadas',
-            'ejercito',
-            'armada',
-            'fuerza aerea',
-            'carabineros',
-            'pdi',
-            'gendarmeria',
-            'escuela militar',
-            'escuela naval',
-            'escuela de aviacion',
-            'postular a las ffaa',
-            'entrar a las ffaa',
-            'requisitos ffaa',
-        ];
-
-        foreach ($keywords as $keyword) {
-            if (str_contains($text, $keyword)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function safeArmedForcesResponse(): string
-    {
-        return "Para entrar a Fuerzas Armadas, de Orden o Seguridad Pública, lo principal es revisar los requisitos oficiales de cada institución, porque cambian según el proceso y la escuela.
-
-En general, deberías revisar:
-
-- Nacionalidad, edad y situación académica exigida.
-- Estado de salud compatible con el cargo.
-- Condición física y pruebas deportivas.
-- Evaluación psicológica y entrevista personal.
-- Antecedentes personales y documentación solicitada.
-- Fechas de postulación y etapas del proceso.
-
-Instituciones que podrías comparar:
-- Ejército.
-- Armada.
-- Fuerza Aérea.
-- Carabineros.
-- PDI.
-- Gendarmería.
-
-No conviene asumir requisitos exactos de edad, estatura, puntajes, fechas o pruebas físicas sin revisar la convocatoria oficial.
-
-Para orientarte mejor: ¿te interesa más una rama militar como Ejército/Armada/Fuerza Aérea, o una institución de orden y seguridad como Carabineros/PDI/Gendarmería?";
-    }
 
     private function normalize(string $text): string
     {
@@ -437,6 +388,371 @@ No conviene asumir que una institución imparte una carrera específica, tiene g
             str_contains($message, 'carreras relacionadas') ||
             str_contains($message, 'comparar opciones') ||
             str_contains($message, 'comparar alternativas');
+    }
+    private function generateArmedForcesResponseIfApplies(Conversation $conversation, string $message): ?string
+    {
+        $studentName = $conversation->student->name ?? 'estudiante';
+
+        if (!$this->isArmedForcesContext($conversation, $message)) {
+            return null;
+        }
+
+        if ($this->containsAny($message, [
+            'fuerza aerea',
+            'fach',
+            'escuela de aviacion',
+            'escuela de especialidades',
+            'rama de fuerza aerea',
+        ])) {
+            return $this->safeAirForceResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'ejercito',
+            'escuela militar',
+            'militar',
+        ])) {
+            return $this->safeArmyResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'armada',
+            'escuela naval',
+            'naval',
+            'infanteria de marina',
+        ])) {
+            return $this->safeNavyResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'carabineros',
+            'escuela de carabineros',
+            'orden publico',
+        ])) {
+            return $this->safeCarabinerosResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'pdi',
+            'policia de investigaciones',
+            'investigacion',
+            'detective',
+        ])) {
+            return $this->safePdiResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'gendarmeria',
+            'gendarme',
+            'penitenciario',
+            'carcel',
+        ])) {
+            return $this->safeGendarmeriaResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'pruebas psicologicas',
+            'prueba psicologica',
+            'psicologico',
+            'psicologica',
+            'entrevista psicologica',
+        ])) {
+            return $this->safePsychologicalTestsResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'pruebas fisicas',
+            'prueba fisica',
+            'preparacion fisica',
+            'plan fisico',
+            'entrenamiento',
+            'documentacion',
+            'documentos',
+            'papeles',
+        ])) {
+            return $this->safePhysicalAndDocumentsPlanResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'no se cual',
+            'no se cuál',
+            'cual me conviene',
+            'cuál me conviene',
+            'ayudame a orientarme',
+            'orientarme',
+            'no tengo claro',
+            'no se que rama',
+            'no sé qué rama',
+        ])) {
+            return $this->safeArmedForcesOrientationResponse($studentName);
+        }
+
+        if ($this->containsAny($message, [
+            'que necesito',
+            'qué necesito',
+            'requisitos',
+            'entrar',
+            'postular',
+            'admision',
+            'admisión',
+            'fechas',
+            'convocatoria',
+            'postulaciones',
+        ])) {
+            return $this->safeGeneralArmedForcesRequirementsResponse($studentName);
+        }
+
+        return null;
+    }
+
+    private function isArmedForcesContext(Conversation $conversation, string $message): bool
+    {
+        $route = $this->normalize((string) $conversation->selected_route);
+
+        $routeIsArmedForces = $this->containsAny($route, [
+            'ffaa',
+            'ff.aa',
+            'fuerzas armadas',
+            'orden',
+            'seguridad publica',
+            'seguridad pública',
+            'carabineros',
+            'pdi',
+            'gendarmeria',
+        ]);
+
+        $messageMentionsArmedForces = $this->containsAny($message, [
+            'ffaa',
+            'ff.aa',
+            'fuerzas armadas',
+            'ejercito',
+            'armada',
+            'fuerza aerea',
+            'fach',
+            'carabineros',
+            'pdi',
+            'gendarmeria',
+            'escuela militar',
+            'escuela naval',
+            'escuela de aviacion',
+            'escuela de especialidades',
+            'orden y seguridad',
+            'seguridad publica',
+        ]);
+
+        if ($routeIsArmedForces || $messageMentionsArmedForces) {
+            return true;
+        }
+
+        $conversation->loadMissing('messages');
+
+        $previousStudentText = $conversation->messages
+            ->where('sender', 'student')
+            ->pluck('content')
+            ->map(fn($content) => $this->normalize($content))
+            ->implode(' ');
+
+        return $this->containsAny($previousStudentText, [
+            'ffaa',
+            'fuerzas armadas',
+            'ejercito',
+            'armada',
+            'fuerza aerea',
+            'fach',
+            'carabineros',
+            'pdi',
+            'gendarmeria',
+        ]);
+    }
+
+    private function safeGeneralArmedForcesRequirementsResponse(string $studentName): string
+    {
+        return "{$studentName}, para entrar a Fuerzas Armadas, de Orden o Seguridad Pública debes revisar los requisitos oficiales de cada institución, porque pueden cambiar cada año.
+
+En general, se suele revisar:
+
+- Edad, nacionalidad y escolaridad exigida.
+- Salud compatible con la formación.
+- Condición física.
+- Evaluación psicológica y entrevista.
+- Antecedentes personales.
+- Documentación y fechas de postulación.
+
+No conviene asumir requisitos exactos de edad, estatura, pruebas físicas o fechas sin revisar la convocatoria oficial.
+
+Para orientarte mejor: ¿te interesa Ejército, Armada, Fuerza Aérea, Carabineros, PDI o Gendarmería?";
+    }
+
+    private function safeAirForceResponse(string $studentName): string
+    {
+        return "{$studentName}, si te interesa la Fuerza Aérea de Chile, puedes explorar principalmente dos líneas:
+
+- Escuela de Aviación: orientada a la formación de oficiales.
+- Escuela de Especialidades: orientada a áreas técnicas y de apoyo especializado.
+
+Podría calzar contigo si te atraen la disciplina, la tecnología, la mecánica, la aviación, el trabajo técnico o la vida institucional.
+
+Debes revisar en fuentes oficiales:
+- Requisitos de edad y escolaridad.
+- Etapas de postulación.
+- Pruebas físicas, médicas y psicológicas.
+- Fechas vigentes.
+- Especialidades disponibles.
+
+No inventaría requisitos exactos sin revisar la convocatoria oficial de la FACh.
+
+Para seguir: ¿te llama más la atención pilotaje/oficialidad o un área técnica como mantenimiento, mecánica, electricidad, electrónica o apoyo operativo?";
+    }
+
+    private function safeArmyResponse(string $studentName): string
+    {
+        return "{$studentName}, el Ejército puede ser una opción si te interesa el trabajo en terreno, la disciplina, la actividad física, la logística, la mecánica o funciones operativas.
+
+Puedes revisar líneas como:
+- Formación de oficiales.
+- Formación de suboficiales.
+- Especialidades técnicas, logísticas o de mantenimiento.
+
+Antes de decidir, revisa en el sitio oficial:
+- Requisitos de ingreso.
+- Etapas de postulación.
+- Pruebas físicas, médicas y psicológicas.
+- Fechas vigentes.
+- Especialidades disponibles.
+
+Para orientarte mejor: ¿te interesa más una función operativa en terreno o una especialidad técnica como mecánica, telecomunicaciones o logística?";
+    }
+
+    private function safeNavyResponse(string $studentName): string
+    {
+        return "{$studentName}, la Armada puede ser una opción si te interesa la vida marítima, navegación, operaciones navales, rescate, mecánica naval o trabajo técnico en buques y bases.
+
+Pero si te inquieta el mar o no sabes nadar bien, eso es importante considerarlo y revisarlo con calma.
+
+Antes de decidir, revisa oficialmente:
+- Requisitos de ingreso.
+- Exigencias físicas y de salud.
+- Si la formación exige natación o vida a bordo.
+- Fechas y etapas de postulación.
+- Escuela Naval o escuelas de especialidades.
+
+Para seguir: ¿te atrae la Armada por la acción y la mecánica, o te preocupa demasiado el tema del mar?";
+    }
+
+    private function safeCarabinerosResponse(string $studentName): string
+    {
+        return "{$studentName}, Carabineros puede interesarte si buscas trabajo en terreno, orden público, seguridad ciudadana, contacto con personas y servicio a la comunidad.
+
+Debes revisar oficialmente:
+- Requisitos de ingreso.
+- Etapas de postulación.
+- Pruebas físicas, médicas y psicológicas.
+- Antecedentes y documentación.
+- Fechas vigentes.
+
+Es una ruta distinta a las Fuerzas Armadas, porque está más orientada a seguridad pública y trabajo directo con la comunidad.
+
+Para seguir: ¿te interesa más la acción en terreno o el servicio comunitario y contacto con personas?";
+    }
+
+    private function safePdiResponse(string $studentName): string
+    {
+        return "{$studentName}, la PDI puede ser una opción si te interesa investigar, analizar información, resolver casos, trabajar con evidencia y participar en procesos de seguridad pública.
+
+Suele requerir un perfil más investigativo, disciplinado y con buena capacidad de observación.
+
+Debes revisar oficialmente:
+- Requisitos de ingreso.
+- Fechas de postulación.
+- Evaluaciones psicológicas, médicas y físicas.
+- Documentación solicitada.
+- Etapas del proceso.
+
+Para seguir: ¿te atrae más investigar y analizar casos, o prefieres una labor más física y operativa?";
+    }
+
+    private function safeGendarmeriaResponse(string $studentName): string
+    {
+        return "{$studentName}, Gendarmería puede interesarte si buscas una ruta de seguridad pública vinculada al sistema penitenciario, custodia, reinserción y trabajo institucional.
+
+Debes revisar oficialmente:
+- Requisitos de ingreso.
+- Escuela de formación correspondiente.
+- Evaluaciones físicas, médicas y psicológicas.
+- Fechas de postulación.
+- Documentación solicitada.
+
+Es una ruta que exige disciplina, estabilidad emocional y disposición para trabajar en contextos complejos.
+
+Para seguir: ¿te interesa esta área por seguridad institucional, servicio público o estabilidad laboral?";
+    }
+
+    private function safePsychologicalTestsResponse(string $studentName): string
+    {
+        return "{$studentName}, en procesos de Fuerzas Armadas, de Orden o Seguridad Pública, las evaluaciones psicológicas suelen buscar si el postulante tiene condiciones compatibles con la vida institucional.
+
+En general pueden revisar:
+- Motivación para postular.
+- Manejo del estrés.
+- Responsabilidad y disciplina.
+- Trabajo en equipo.
+- Control emocional.
+- Toma de decisiones.
+- Coherencia entre entrevista y cuestionarios.
+
+No conviene intentar “preparar respuestas perfectas”. Lo mejor es ser honesto, dormir bien, llegar puntual y explicar con claridad por qué quieres postular.
+
+¿Quieres que practiquemos una mini entrevista vocacional para ver si esta ruta calza contigo?";
+    }
+
+    private function safePhysicalAndDocumentsPlanResponse(string $studentName): string
+    {
+        return "{$studentName}, puedes prepararte en dos líneas: condición física y documentación. Te dejo una versión resumida.
+
+Preparación física inicial:
+- 3 días por semana: trote suave o caminata rápida de 20 a 30 minutos.
+- 2 días: fuerza básica con sentadillas, flexiones, abdominales y plancha.
+- 1 día: movilidad, elongación y recuperación.
+- Registra tiempos, repeticiones y avances.
+
+Documentación a ordenar:
+- Cédula vigente.
+- Certificados de estudio.
+- Certificados solicitados en la convocatoria.
+- Antecedentes personales, si la institución los pide.
+- Fechas y bases oficiales del proceso.
+
+Antes de entrenar fuerte, revisa tu estado de salud y los requisitos oficiales de la institución que te interesa.
+
+¿Quieres que armemos un plan semanal de 4 semanas?";
+    }
+
+    private function safeArmedForcesOrientationResponse(string $studentName): string
+    {
+        return "{$studentName}, para orientarte entre Fuerzas Armadas, de Orden y Seguridad Pública, conviene cruzar tres cosas: lo que te gusta, lo que se te da bien y lo que te preocupa.
+
+Resumen rápido:
+- Ejército: acción, terreno, logística, mecánica y disciplina.
+- Armada: mar, navegación, rescate, buques y mecánica naval.
+- Fuerza Aérea: aviación, tecnología, mecánica, precisión y trabajo técnico.
+- Carabineros: seguridad ciudadana, comunidad y orden público.
+- PDI: investigación, análisis y trabajo policial especializado.
+- Gendarmería: seguridad penitenciaria, control institucional y reinserción.
+
+Para avanzar, dime:
+- ¿Te gusta más la acción, la tecnología, investigar, ayudar a la comunidad o el trabajo técnico?
+- ¿Hay algo que te preocupe, como altura, mar, disciplina, pruebas físicas o entrevistas?";
+    }
+
+    private function containsAny(string $text, array $keywords): bool
+    {
+        foreach ($keywords as $keyword) {
+            if (str_contains($text, $this->normalize($keyword))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function safeCareerComparisonResponse(Conversation $conversation): string
