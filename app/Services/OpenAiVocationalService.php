@@ -163,8 +163,20 @@ class OpenAiVocationalService
         }
 
         $texts = collect($output)
-            ->flatMap(fn($item) => data_get($item, 'content', []))
-            ->map(fn($content) => data_get($content, 'text'))
+            ->flatMap(function ($item) {
+                $content = data_get($item, 'content', []);
+
+                if (!is_array($content)) {
+                    return [];
+                }
+
+                return $content;
+            })
+            ->map(function ($content) {
+                return data_get($content, 'text')
+                    ?? data_get($content, 'content')
+                    ?? data_get($content, 'value');
+            })
             ->filter()
             ->map(fn($text) => trim((string) $text))
             ->filter()

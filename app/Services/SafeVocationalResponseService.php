@@ -25,8 +25,66 @@ class SafeVocationalResponseService
         if ($this->isCareerComparisonQuestion($normalizedMessage)) {
             return $this->safeCareerComparisonResponse($conversation);
         }
+        if ($this->isArmedForcesQuestion($studentMessage)) {
+            return $this->safeArmedForcesResponse();
+        }
 
         return null;
+    }
+    private function isArmedForcesQuestion(string $message): bool
+    {
+        $text = $this->normalize($message);
+
+        $keywords = [
+            'ffaa',
+            'fuerzas armadas',
+            'ejercito',
+            'armada',
+            'fuerza aerea',
+            'carabineros',
+            'pdi',
+            'gendarmeria',
+            'escuela militar',
+            'escuela naval',
+            'escuela de aviacion',
+            'postular a las ffaa',
+            'entrar a las ffaa',
+            'requisitos ffaa',
+        ];
+
+        foreach ($keywords as $keyword) {
+            if (str_contains($text, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function safeArmedForcesResponse(): string
+    {
+        return "Para entrar a Fuerzas Armadas, de Orden o Seguridad Pública, lo principal es revisar los requisitos oficiales de cada institución, porque cambian según el proceso y la escuela.
+
+En general, deberías revisar:
+
+- Nacionalidad, edad y situación académica exigida.
+- Estado de salud compatible con el cargo.
+- Condición física y pruebas deportivas.
+- Evaluación psicológica y entrevista personal.
+- Antecedentes personales y documentación solicitada.
+- Fechas de postulación y etapas del proceso.
+
+Instituciones que podrías comparar:
+- Ejército.
+- Armada.
+- Fuerza Aérea.
+- Carabineros.
+- PDI.
+- Gendarmería.
+
+No conviene asumir requisitos exactos de edad, estatura, puntajes, fechas o pruebas físicas sin revisar la convocatoria oficial.
+
+Para orientarte mejor: ¿te interesa más una rama militar como Ejército/Armada/Fuerza Aérea, o una institución de orden y seguridad como Carabineros/PDI/Gendarmería?";
     }
 
     private function normalize(string $text): string
