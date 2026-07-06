@@ -29,14 +29,18 @@ class GeminiVocationalService
                     'systemInstruction' => [
                         'parts' => [
                             [
-                                'text' => $this->systemPrompt($conversation),
+                                'text' => $this->promptService->build($conversation),
                             ],
                         ],
                     ],
                     'contents' => $this->buildContents($conversation, $studentMessage),
                     'generationConfig' => [
-                        'temperature' => 0.3,
-                        'maxOutputTokens' => 900,
+                        'temperature' => 0.25,
+                        'topP' => 0.85,
+                        'maxOutputTokens' => 1200,
+                        'thinkingConfig' => [
+                            'thinkingBudget' => 0,
+                        ],
                     ],
                 ]);
 
@@ -77,6 +81,29 @@ class GeminiVocationalService
 
                 return $this->completeTruncatedResponseFallback($conversation);
             }
+            if ($finishReason === 'SAFETY') {
+                Log::warning('Gemini response blocked by safety filters', [
+                    'finish_reason' => $finishReason,
+                ]);
+
+                return 'Prefiero que este tema lo converses directamente con el orientador del colegio, para recibir una ayuda más adecuada y segura.';
+            }
+
+            if ($finishReason === 'RECITATION') {
+                Log::warning('Gemini response blocked by recitation filters', [
+                    'finish_reason' => $finishReason,
+                ]);
+
+                return 'No pude responder esa consulta de forma segura. Reformula la pregunta o revísala con el orientador del colegio.';
+            }
+
+            if ($finishReason === 'OTHER') {
+                Log::warning('Gemini response finished with OTHER reason', [
+                    'finish_reason' => $finishReason,
+                ]);
+
+                return 'No pude generar una respuesta completa en este momento. Intenta nuevamente con una pregunta más específica.';
+            }
 
             return $this->limitResponseLength($content);
         } catch (\Throwable $exception) {
@@ -87,6 +114,10 @@ class GeminiVocationalService
             return 'Ocurrió un problema al conectar con Gemini. Intenta nuevamente más tarde.';
         }
     }
+
+    public function __construct(
+        private VocationalSystemPromptService $promptService
+    ) {}
 
     private function completeTruncatedResponseFallback(Conversation $conversation): string
     {
