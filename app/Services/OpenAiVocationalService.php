@@ -10,8 +10,8 @@ class OpenAiVocationalService
 {
     private const MAX_HISTORY_MESSAGES = 10;
     private const REQUEST_TIMEOUT_SECONDS = 45;
-    private const MAX_OUTPUT_TOKENS = 1200;
-    private const MAX_RESPONSE_LENGTH = 1800;
+    private const MAX_OUTPUT_TOKENS = 650;
+    private const MAX_RESPONSE_LENGTH = 1400;
 
     public function __construct(
         private VocationalSystemPromptService $promptService
@@ -195,7 +195,19 @@ También puedes intentarlo nuevamente más tarde.";
             return $content;
         }
 
-        return mb_substr($content, 0, self::MAX_RESPONSE_LENGTH) . "\n\nRespuesta resumida por extensión. Podemos seguir profundizando paso a paso.";
+        $cut = mb_substr($content, 0, self::MAX_RESPONSE_LENGTH);
+
+        $lastPeriod = max(
+            mb_strrpos($cut, '.'),
+            mb_strrpos($cut, '?'),
+            mb_strrpos($cut, '!')
+        );
+
+        if ($lastPeriod !== false && $lastPeriod > 600) {
+            $cut = mb_substr($cut, 0, $lastPeriod + 1);
+        }
+
+        return trim($cut) . "\n\nPuedo seguir con más detalle si quieres profundizar en este punto.";
     }
 
     private function sanitizeLogPayload(?array $payload): array
