@@ -8,27 +8,38 @@ use Illuminate\Support\Facades\Log;
 
 class OpenAiVocationalService
 {
+    public function __construct(
+        private VocationalSystemPromptService $promptService
+    ) {}
+
     public function generateResponse(Conversation $conversation, string $studentMessage): string
     {
         $apiKey = config('ai.openai.api_key');
-        $model = config('ai.openai.model');
+        $model = config('ai.openai.model', 'gpt-5-mini');
 
         if (!$apiKey) {
-            return 'La IA real aún no está configurada. Falta definir OPENAI_API_KEY en el archivo .env.';
+            return 'La IA de OpenAI aún no está configurada. Falta definir OPENAI_API_KEY en el archivo .env.';
+        }
+
+        if (!$model) {
+            return 'La IA de OpenAI aún no está configurada. Falta definir OPENAI_MODEL en el archivo .env.';
         }
 
         $conversation->load(['student', 'messages']);
 
-        $input = $this->buildInput($conversation, $studentMessage);
-
         try {
-            $response = Http::withToken($apiKey)
-                ->timeout(45)
+            $response = Http::timeout(45)
+                ->retry(2, 300)
+                ->withToken($apiKey)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])
                 ->post('https://api.openai.com/v1/responses', [
                     'model' => $model,
-                    'input' => $input,
-                    'temperature' => 0.4,
-                    'max_output_tokens' => 700,
+                    'instructions' => $this->promptService->build($conversation),
+                    'input' => $this->buildInput($conversation, $studentMessage),
+                    'temperature' => 0.25,
+                    'max_output_tokens' => 1200,
                 ]);
 
             if ($response->failed()) {
@@ -37,111 +48,103 @@ class OpenAiVocationalService
                     'body' => $response->json(),
                 ]);
 
+                if ($response->status() === 429) {
+                    return $this->rateLimitFallbackResponse();
+                }
+
+                if (app()->environment('local')) {
+                    return 'Error OpenAI: ' . $response->status() . ' - ' . json_encode($response->json(), JSON_UNESCAPED_UNICODE);
+                }
+
                 return 'No pude generar una respuesta con IA en este momento. Intenta nuevamente o consulta con el orientador.';
             }
 
-            return $this->extractText($response->json());
+            $content = trim($response->json('output_text') ?? '');
+
+            if (!$content) {
+                Log::warning('OpenAI empty response', [
+                    'body' => $response->json(),
+                ]);
+
+                return 'No pude generar una respuesta clara en este momento. Intenta reformular tu pregunta o consulta con el orientador.';
+            }
+
+            return $this->limitResponseLength($content);
         } catch (\Throwable $exception) {
             Log::error('OpenAI request exception', [
                 'message' => $exception->getMessage(),
             ]);
 
-            return 'Ocurrió un problema al conectar con la IA. Intenta nuevamente más tarde.';
+            return 'Ocurrió un problema al conectar con OpenAI. Intenta nuevamente más tarde.';
         }
     }
 
     private function buildInput(Conversation $conversation, string $studentMessage): array
     {
-        $student = $conversation->student;
+        $input = [];
 
-        $systemPrompt = $this->systemPrompt($conversation);
+        $messages = $conversation->messages
+            ->sortBy('created_at')
+            ->take(-10)
+            ->values();
 
-        $messages = [
-            [
-                'role' => 'developer',
-                'content' => $systemPrompt,
-            ],
-        ];
+        foreach ($messages as $message) {
+            if (!$message->content) {
+                continue;
+            }
 
-        foreach ($conversation->messages->take(-10) as $message) {
-            $messages[] = [
+            $input[] = [
                 'role' => $message->sender === 'student' ? 'user' : 'assistant',
-                'content' => $message->content,
+                'content' => [
+                    [
+                        'type' => 'input_text',
+                        'text' => trim($message->content),
+                    ],
+                ],
             ];
         }
 
-        $messages[] = [
-            'role' => 'user',
-            'content' => $studentMessage,
-        ];
+        $lastUserMessage = collect($input)
+            ->where('role', 'user')
+            ->last();
 
-        return $messages;
-    }
+        $lastUserText = trim(data_get($lastUserMessage, 'content.0.text', ''));
 
-    private function systemPrompt(Conversation $conversation): string
-    {
-        $student = $conversation->student;
-        $route = $conversation->selected_route;
-
-        return <<<PROMPT
-Eres un asistente vocacional del Instituto San José.
-
-Tu función es orientar estudiantes de enseñanza media, especialmente 3° y 4° medio, sobre opciones de estudio, carreras, rutas formativas, beneficios estudiantiles, pedagogías y opciones en Fuerzas Armadas, de Orden y Seguridad Pública.
-
-Datos del estudiante:
-- Nombre: {$student->name}
-- Curso: {$student->course}
-- Colegio: {$student->school}
-- Ruta seleccionada: {$route}
-
-Reglas de respuesta:
-- Usa español chileno neutro, claro y respetuoso.
-- Mantén respuestas breves, ordenadas y útiles.
-- No impongas una carrera.
-- No decidas por el estudiante.
-- Haz preguntas de seguimiento cuando falte información.
-- Si el estudiante dice que una asignatura le cuesta o no le gusta, no la tomes como interés principal.
-- Diferencia entre gusto, habilidad, dificultad y preocupación.
-- Sugiere opciones compatibles con intereses reales.
-- Recomienda conversar con el orientador del colegio.
-- No solicites RUT, dirección exacta, datos médicos ni información familiar delicada.
-- Cuando entregues información que puede cambiar, indica que debe verificarse en fuentes oficiales.
-
-Fuentes oficiales a considerar cuando corresponda:
-- DEMRE
-- Acceso Educación Superior Mineduc
-- Mi Futuro Mineduc
-- CNA Chile
-- FUAS / Beneficios Estudiantiles Mineduc
-- ChileAtiende
-- Elige Educar
-- Quiero Ser Profe
-- Sitios oficiales de FF.AA., Carabineros, PDI y Gendarmería
-
-Estructura recomendada:
-1. Reconoce lo que el estudiante dijo.
-2. Identifica áreas posibles.
-3. Sugiere alternativas razonables.
-4. Haz 2 o 3 preguntas de seguimiento.
-PROMPT;
-    }
-
-    private function extractText(array $response): string
-    {
-        if (!empty($response['output_text'])) {
-            return trim($response['output_text']);
+        if ($lastUserText !== trim($studentMessage)) {
+            $input[] = [
+                'role' => 'user',
+                'content' => [
+                    [
+                        'type' => 'input_text',
+                        'text' => trim($studentMessage),
+                    ],
+                ],
+            ];
         }
 
-        $text = '';
+        return $input;
+    }
 
-        foreach ($response['output'] ?? [] as $outputItem) {
-            foreach ($outputItem['content'] ?? [] as $contentItem) {
-                if (($contentItem['type'] ?? null) === 'output_text') {
-                    $text .= $contentItem['text'] ?? '';
-                }
-            }
+    private function rateLimitFallbackResponse(): string
+    {
+        return "En este momento la IA alcanzó su límite temporal de uso o saldo disponible.
+
+Para avanzar, dime qué área te interesa más:
+- Universidad.
+- Instituto profesional o CFT.
+- Beneficios, becas, gratuidad o FUAS.
+- Carreras relacionadas con tus intereses.
+- Fuerzas Armadas, de Orden o Seguridad Pública.
+
+También puedes intentarlo nuevamente más tarde.";
+    }
+
+    private function limitResponseLength(string $content): string
+    {
+        if (mb_strlen($content) <= 1800) {
+            return $content;
         }
 
-        return trim($text) ?: 'No pude generar una respuesta clara en este momento.';
+        return mb_substr($content, 0, 1800) . "\n\nRespuesta resumida por extensión. Podemos seguir profundizando paso a paso.";
     }
 }
