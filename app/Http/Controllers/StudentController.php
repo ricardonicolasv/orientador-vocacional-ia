@@ -116,6 +116,6 @@ class StudentController extends Controller
 
         $routeName = $routes[$route] ?? 'exploración vocacional general';
 
-        return "Hola {$studentName}, soy tu asistente vocacional del Instituto San José. Estoy aquí para ayudarte a explorar opciones de estudio, carreras, beneficios y caminos posibles después de 4° medio. Veo que seleccionaste {$routeName}. Para orientarte mejor, cuéntame: ¿qué asignaturas te gustan más y qué actividades disfrutas hacer?";
+        return "Hola {$studentName}, soy tu asistente vocacional. Estoy aquí para ayudarte a explorar opciones de estudio, carreras, beneficios y caminos posibles después de 4° medio. Veo que seleccionaste {$routeName}. Para orientarte mejor, cuéntame: ¿qué asignaturas te gustan más y qué actividades disfrutas hacer?";
     }
 }
