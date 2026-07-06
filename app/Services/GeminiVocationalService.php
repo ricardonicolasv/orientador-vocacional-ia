@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Log;
 
 class GeminiVocationalService
 {
+    public function __construct(
+        private VocationalSystemPromptService $promptService
+    ) {}
+
     public function generateResponse(Conversation $conversation, string $studentMessage): string
     {
         $apiKey = config('ai.gemini.api_key');
@@ -17,10 +21,15 @@ class GeminiVocationalService
             return 'La IA de Gemini aún no está configurada. Falta definir GEMINI_API_KEY en el archivo .env.';
         }
 
+        if (!$model) {
+            return 'La IA de Gemini aún no está configurada. Falta definir GEMINI_MODEL en el archivo .env.';
+        }
+
         $conversation->load(['student', 'messages']);
 
         try {
             $response = Http::timeout(45)
+                ->retry(2, 300)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                     'x-goog-api-key' => $apiKey,
@@ -70,6 +79,18 @@ class GeminiVocationalService
                     'body' => $response->json(),
                 ]);
 
+                if ($finishReason === 'SAFETY') {
+                    return 'Prefiero que este tema lo converses directamente con el orientador del colegio, para recibir una ayuda más adecuada y segura.';
+                }
+
+                if ($finishReason === 'RECITATION') {
+                    return 'No pude responder esa consulta de forma segura. Reformula la pregunta o revísala con el orientador del colegio.';
+                }
+
+                if ($finishReason === 'MAX_TOKENS') {
+                    return $this->completeTruncatedResponseFallback($conversation);
+                }
+
                 return 'No pude generar una respuesta clara en este momento. Intenta reformular tu pregunta o consulta con el orientador.';
             }
 
@@ -81,6 +102,7 @@ class GeminiVocationalService
 
                 return $this->completeTruncatedResponseFallback($conversation);
             }
+
             if ($finishReason === 'SAFETY') {
                 Log::warning('Gemini response blocked by safety filters', [
                     'finish_reason' => $finishReason,
@@ -115,111 +137,65 @@ class GeminiVocationalService
         }
     }
 
-    public function __construct(
-        private VocationalSystemPromptService $promptService
-    ) {}
-
     private function completeTruncatedResponseFallback(Conversation $conversation): string
     {
         $studentName = $conversation->student->name ?? 'estudiante';
 
-        return "{$studentName}, con lo que mencionas puedo orientarte de forma inicial.
+        return "{$studentName}, la respuesta se cortó antes de completarse, pero puedo dejarte una orientación inicial.
 
-Tus intereses apuntan a áreas relacionadas con:
-- Actividad física y deporte.
-- Naturaleza y aire libre.
-- Exploración, trekking y contacto con paisajes.
-- Turismo aventura, ecoturismo o actividades en terreno.
+Con lo que mencionas, conviene seguir explorando tus intereses paso a paso y comparar opciones reales de estudio.
 
-Podrías explorar alternativas como:
-1. Pedagogía en Educación Física.
-2. Preparador físico o entrenamiento deportivo.
-3. Turismo aventura o ecoturismo.
-4. Guía de actividades al aire libre.
-5. Gestión de áreas naturales o conservación.
-6. Carreras vinculadas a seguridad, rescate o trabajo en terreno, si te interesa esa línea.
+Para avanzar, podemos revisar:
+- Qué áreas te interesan más.
+- Si te conviene universidad, instituto profesional o CFT.
+- Qué carreras o programas podrían relacionarse con tus intereses.
+- Qué requisitos, duración, campo laboral y beneficios debes verificar en fuentes oficiales.
 
-Para seguir orientándote mejor, responde:
-- ¿Te gustaría trabajar guiando personas en actividades al aire libre?
-- ¿Prefieres algo deportivo, turístico, educativo o relacionado con naturaleza y conservación?";
+¿Quieres que comparemos las rutas universidad, IP y CFT según lo que has contado?";
     }
 
     private function buildContents(Conversation $conversation, string $studentMessage): array
     {
         $contents = [];
 
-        foreach ($conversation->messages->take(-10) as $message) {
+        $messages = $conversation->messages
+            ->sortBy('created_at')
+            ->take(-10)
+            ->values();
+
+        foreach ($messages as $message) {
+            if (!$message->content) {
+                continue;
+            }
+
             $contents[] = [
                 'role' => $message->sender === 'student' ? 'user' : 'model',
                 'parts' => [
                     [
-                        'text' => $message->content,
+                        'text' => trim($message->content),
                     ],
                 ],
             ];
         }
 
-        $contents[] = [
-            'role' => 'user',
-            'parts' => [
-                [
-                    'text' => $studentMessage,
+        $lastUserMessage = collect($contents)
+            ->where('role', 'user')
+            ->last();
+
+        $lastUserText = trim(data_get($lastUserMessage, 'parts.0.text', ''));
+
+        if ($lastUserText !== trim($studentMessage)) {
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [
+                    [
+                        'text' => trim($studentMessage),
+                    ],
                 ],
-            ],
-        ];
+            ];
+        }
 
         return $contents;
-    }
-
-    private function systemPrompt(Conversation $conversation): string
-    {
-        $student = $conversation->student;
-        $route = $conversation->selected_route;
-
-        return <<<PROMPT
-Eres un asistente vocacional del Instituto San José.
-
-Tu función es orientar estudiantes de enseñanza media, especialmente 3° y 4° medio, sobre opciones de estudio, carreras, rutas formativas, beneficios estudiantiles, pedagogías y opciones en Fuerzas Armadas, de Orden y Seguridad Pública.
-
-Datos del estudiante:
-- Nombre: {$student->name}
-- Curso: {$student->course}
-- Colegio: {$student->school}
-- Ruta seleccionada: {$route}
-
-Reglas generales:
-- Responde siempre en español chileno neutro.
-- Mantén respuestas breves, claras, ordenadas y útiles.
-- No impongas una carrera.
-- No decidas por el estudiante.
-- Haz preguntas de seguimiento cuando falte información.
-- Diferencia entre gusto, habilidad, dificultad, preocupación e interés real.
-- Si el estudiante dice que una asignatura le cuesta, no le gusta o se le hace difícil, no la tomes como interés principal.
-- Recomienda conversar con el orientador del colegio.
-- No solicites RUT, dirección exacta, datos médicos, antecedentes familiares delicados ni información sensible innecesaria.
-- No inventes becas, requisitos, instituciones, porcentajes, fechas, puntajes, vacantes ni montos.
-- Cuando entregues información que puede cambiar, indica que debe verificarse en fuentes oficiales.
-
-Reglas críticas sobre admisión universitaria en Chile:
-- No menciones PSU ni PSU+ como proceso vigente.
-- En Chile, la admisión universitaria considera factores como PAES, NEM, Ranking y ponderaciones definidas por cada carrera e institución.
-- No inventes puntajes mínimos, promedios mínimos, pruebas especiales ni requisitos internos.
-- Si preguntan por requisitos de una universidad o carrera específica, recomienda revisar DEMRE, Acceso Educación Superior Mineduc y el sitio oficial de admisión de la universidad.
-
-Reglas críticas sobre beneficios estudiantiles en Chile:
-- FUAS significa Formulario Único de Acreditación Socioeconómica.
-- FUAS sirve para postular a gratuidad, becas y créditos.
-- La gratuidad no es automática para todos.
-- Depende de requisitos socioeconómicos, institución, carrera, matrícula válida y condiciones definidas por Mineduc.
-- Recomienda revisar Beneficios Estudiantiles Mineduc, FUAS y ChileAtiende.
-
-Formato:
-- Párrafos cortos.
-- Listas simples.
-- Máximo 4 a 6 alternativas de carrera o ruta.
-- Máximo 2 o 3 preguntas de seguimiento.
-- Evita respuestas largas o repetitivas.
-PROMPT;
     }
 
     private function rateLimitFallbackResponse(): string
