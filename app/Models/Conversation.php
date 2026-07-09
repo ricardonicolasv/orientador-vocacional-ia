@@ -29,8 +29,31 @@ class Conversation extends Model
         return $this->hasMany(Message::class);
     }
 
+    /*
+     * Relación antigua.
+     * La dejamos para no romper vistas/controladores existentes.
+     * Más adelante puede reemplazarse por currentReport().
+     */
     public function report()
     {
         return $this->hasOne(VocationalReport::class);
+    }
+
+    /*
+     * Todos los informes generados para esta conversación.
+     */
+    public function reports()
+    {
+        return $this->hasMany(VocationalReport::class);
+    }
+
+    /*
+     * Informe vigente/actual de la conversación.
+     */
+    public function currentReport()
+    {
+        return $this->hasOne(VocationalReport::class)
+            ->where('is_current', true)
+            ->latestOfMany();
     }
 }

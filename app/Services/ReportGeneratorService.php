@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Conversation;
 use App\Models\VocationalReport;
+use Illuminate\Support\Facades\DB;
 
 class ReportGeneratorService
 {
@@ -22,12 +23,38 @@ class ReportGeneratorService
         $difficulties = $this->detectDifficulties($normalizedText);
         $clarityLevel = $this->estimateClarityLevel($normalizedText, $conversation->selected_route);
 
-        return VocationalReport::updateOrCreate(
-            [
+        return DB::transaction(function () use (
+            $conversation,
+            $studentMessages,
+            $detectedAreas,
+            $difficulties,
+            $clarityLevel,
+            $normalizedText
+        ) {
+            $lastReport = VocationalReport::where('conversation_id', $conversation->id)
+                ->lockForUpdate()
+                ->orderByDesc('version')
+                ->first();
+
+            $nextVersion = ($lastReport?->version ?? 0) + 1;
+
+            VocationalReport::where('conversation_id', $conversation->id)
+                ->where('is_current', true)
+                ->update([
+                    'is_current' => false,
+                ]);
+
+            $lastMessageId = $conversation->messages()
+                ->latest('id')
+                ->value('id');
+
+            return VocationalReport::create([
                 'student_id' => $conversation->student_id,
                 'conversation_id' => $conversation->id,
-            ],
-            [
+                'version' => $nextVersion,
+                'is_current' => true,
+                'generated_until_message_id' => $lastMessageId,
+
                 'interests' => $this->extractInterests($studentMessages, $detectedAreas, $difficulties),
                 'detected_areas' => implode(', ', $detectedAreas),
                 'explored_routes' => $this->formatRoute($conversation->selected_route),
@@ -36,8 +63,8 @@ class ReportGeneratorService
                 'recommendations' => $this->buildRecommendations($detectedAreas, $difficulties, $conversation->selected_route),
                 'student_summary' => $this->buildStudentSummary($conversation, $detectedAreas, $difficulties, $clarityLevel),
                 'orientador_notes' => $this->buildOrientadorNotes($conversation, $detectedAreas, $difficulties, $clarityLevel),
-            ]
-        );
+            ]);
+        });
     }
     private function containsKeyword(string $text, string $keyword): bool
     {

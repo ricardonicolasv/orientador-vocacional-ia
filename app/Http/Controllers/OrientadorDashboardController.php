@@ -172,9 +172,16 @@ class OrientadorDashboardController extends Controller
     public function showStudent(Student $student)
     {
         $student->load([
+            'conversations' => function ($query) {
+                $query->latest();
+            },
             'conversations.messages',
-            'conversations.report',
-            'reports',
+            'conversations.reports' => function ($query) {
+                $query->latest();
+            },
+            'reports' => function ($query) {
+                $query->latest();
+            },
         ]);
 
         return view('orientador.student-show', compact('student'));

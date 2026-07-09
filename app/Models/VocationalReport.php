@@ -17,6 +17,9 @@ class VocationalReport extends Model
         'recommendations',
         'student_summary',
         'orientador_notes',
+        'version',
+        'is_current',
+        'generated_until_message_id',
     ];
 
     public function student()

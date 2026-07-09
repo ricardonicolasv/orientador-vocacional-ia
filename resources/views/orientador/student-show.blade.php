@@ -49,7 +49,13 @@
     ];
 
     $lastConversation = $student->conversations->sortByDesc('created_at')->first();
-    $lastReport = $student->reports->sortByDesc('created_at')->first();
+    $currentStudentReport = $student->reports
+    ->where('is_current', true)
+    ->sortByDesc('created_at')
+    ->first();
+
+    $lastReport = $currentStudentReport
+    ?: $student->reports->sortByDesc('created_at')->first();
 
     $activeConversations = $student->conversations->where('status', 'active')->count();
     $finishedConversations = $student->conversations->where('status', 'finished')->count();
@@ -229,8 +235,16 @@
                 @forelse($student->conversations->sortByDesc('created_at') as $conversation)
                 @php
                 $routeLabel = $routeLabels[$conversation->selected_route] ?? $conversation->selected_route;
-                $report = $conversation->report;
                 $isFinished = $conversation->status === 'finished';
+
+                $reportsHistory = $conversation->reports->sortByDesc('created_at');
+
+                $currentReport = $reportsHistory
+                ->where('is_current', true)
+                ->sortByDesc('created_at')
+                ->first();
+
+                $report = $currentReport ?: $reportsHistory->first();
                 @endphp
 
                 <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
@@ -291,25 +305,80 @@
                                 -->
                                 @if($report)
                                 <a href="{{ route('orientador.reports.show', $report) }}"
-                                    class="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
-                                    Ver reporte
+                                    class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                                    Ver informe actual
                                 </a>
 
-                                <a href="{{ route('orientador.reports.pdf', $report) }}"
-                                    class="inline-flex justify-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-800">
-                                    Descargar PDF
+                                <a href="{{ route('orientador.reports.pdf', $report, false) }}"
+                                    download
+                                    class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-800">
+                                    Descargar PDF actual
                                 </a>
+
+                                <form action="{{ route('orientador.reports.generate', $conversation) }}" method="POST">
+                                    @csrf
+
+                                    <button type="submit"
+                                        onclick="return confirm('¿Quieres generar un nuevo informe? El informe anterior quedará guardado en el historial.')"
+                                        class="inline-flex items-center justify-center rounded-xl bg-yellow-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-600">
+                                        Generar nuevo informe
+                                    </button>
+                                </form>
                                 @else
                                 <form action="{{ route('orientador.reports.generate', $conversation) }}" method="POST">
                                     @csrf
 
                                     <button type="submit"
-                                        class="inline-flex justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
-                                        Generar reporte
+                                        class="inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
+                                        Generar informe
                                     </button>
                                 </form>
                                 @endif
                             </div>
+
+                            @if($reportsHistory->isNotEmpty())
+                            <div class="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <h4 class="text-sm font-bold text-gray-800">
+                                    Historial de informes
+                                </h4>
+
+                                <div class="mt-3 space-y-2">
+                                    @foreach($reportsHistory as $historyReport)
+                                    <div class="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div class="text-sm text-gray-700">
+                                            <div class="font-semibold text-gray-900">
+                                                Informe versión {{ $historyReport->version ?? $loop->iteration }}
+
+                                                @if($historyReport->is_current)
+                                                <span class="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                                                    Actual
+                                                </span>
+                                                @endif
+                                            </div>
+
+                                            <div class="text-xs text-gray-500">
+                                                Generado: {{ $historyReport->created_at->format('d-m-Y H:i') }}
+                                                · Claridad: {{ ucfirst($historyReport->clarity_level ?? 'sin definir') }}
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-wrap gap-2">
+                                            <a href="{{ route('orientador.reports.show', $historyReport) }}"
+                                                class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                                Ver
+                                            </a>
+
+                                            <a href="{{ route('orientador.reports.pdf', $historyReport, false) }}"
+                                                download
+                                                class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-800">
+                                                PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
 
