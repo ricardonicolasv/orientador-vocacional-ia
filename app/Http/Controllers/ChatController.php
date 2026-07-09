@@ -43,15 +43,32 @@ class ChatController extends Controller
             'content.required' => 'Escribe un mensaje antes de enviar.',
         ]);
 
+        $content = trim($validated['content']);
+
+        $lastStudentMessage = Message::where('conversation_id', $conversation->id)
+            ->where('sender', 'student')
+            ->latest()
+            ->first();
+
+        if (
+            $lastStudentMessage &&
+            trim($lastStudentMessage->content) === $content &&
+            $lastStudentMessage->created_at->gt(now()->subSeconds(10))
+        ) {
+            return redirect()
+                ->route('chat.show', $conversation)
+                ->with('error', 'Ese mensaje ya fue enviado. Espera la respuesta antes de volver a enviarlo.');
+        }
+
         Message::create([
             'conversation_id' => $conversation->id,
             'sender' => 'student',
-            'content' => $validated['content'],
+            'content' => $content,
         ]);
 
         $conversation->load(['student', 'messages']);
 
-        $scopeResponse = $vocationalScopeGuardService->generateIfOutOfScope($validated['content']);
+        $scopeResponse = $vocationalScopeGuardService->generateIfOutOfScope($content);
 
         if ($scopeResponse) {
             Message::create([
@@ -67,17 +84,17 @@ class ChatController extends Controller
 
         $safeResponse = $safeVocationalResponseService->generateIfApplies(
             $conversation,
-            $validated['content']
+            $content
         );
 
         if ($safeResponse) {
             $aiResponse = $safeResponse;
         } else {
             $aiResponse = match ($aiMode) {
-                'openai' => $openAiVocationalService->generateResponse($conversation, $validated['content']),
-                'groq' => $groqVocationalService->generateResponse($conversation, $validated['content']),
-                'gemini' => $geminiVocationalService->generateResponse($conversation, $validated['content']),
-                default => $aiVocationalService->generateResponse($conversation, $validated['content']),
+                'openai' => $openAiVocationalService->generateResponse($conversation, $content),
+                'groq' => $groqVocationalService->generateResponse($conversation, $content),
+                'gemini' => $geminiVocationalService->generateResponse($conversation, $content),
+                default => $aiVocationalService->generateResponse($conversation, $content),
             };
         }
 

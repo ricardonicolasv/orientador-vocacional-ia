@@ -177,7 +177,7 @@
             </div>
         </section>
 
-        <form action="{{ route('chat.message', $conversation) }}" method="POST"
+        <form id="chatForm" action="{{ route('chat.message', $conversation) }}" method="POST"
             class="mt-4 bg-white border border-slate-200 rounded-3xl shadow-sm p-4">
             @csrf
 
@@ -186,16 +186,18 @@
             @enderror
 
             <div class="flex flex-col md:flex-row gap-3">
-                <textarea id="messageInput" name="content" rows="2"
+                <textarea id="messageInput" name="content" rows="2" required maxlength="2000"
                     class="flex-1 resize-none rounded-xl border-slate-300 focus:border-green-600 focus:ring-green-600"
                     placeholder="Escribe tu mensaje..."></textarea>
 
-                <button type="submit"
-                    class="rounded-xl bg-green-700 px-6 py-3 text-white font-semibold hover:bg-green-800 transition">
+                <button id="sendButton" type="submit"
+                    class="rounded-xl bg-green-700 px-6 py-3 text-white font-semibold hover:bg-green-800 transition disabled:opacity-60 disabled:cursor-not-allowed">
                     Enviar
                 </button>
             </div>
-
+            <p id="loadingMessage" class="mt-2 hidden text-sm font-medium text-slate-500">
+                Generando respuesta, espera un momento...
+            </p>
             <p class="mt-2 text-xs text-slate-400">
                 Esta herramienta entrega orientación inicial y no reemplaza la conversación con el orientador del colegio.
             </p>
@@ -223,6 +225,9 @@
             const chatContainer = document.getElementById('chatContainer');
             const messageInput = document.getElementById('messageInput');
             const quickButtons = document.querySelectorAll('.quick-message');
+            const chatForm = document.getElementById('chatForm');
+            const sendButton = document.getElementById('sendButton');
+            const loadingMessage = document.getElementById('loadingMessage');
 
             if (chatContainer) {
                 chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -230,7 +235,7 @@
 
             quickButtons.forEach(function(button) {
                 button.addEventListener('click', function() {
-                    if (!messageInput) {
+                    if (!messageInput || messageInput.readOnly) {
                         return;
                     }
 
@@ -238,6 +243,59 @@
                     messageInput.focus();
                 });
             });
+
+            if (chatForm && messageInput && sendButton) {
+                let isSubmitting = false;
+
+                chatForm.addEventListener('submit', function(event) {
+                    const content = messageInput.value.trim();
+
+                    if (!content) {
+                        event.preventDefault();
+                        messageInput.focus();
+                        return;
+                    }
+
+                    if (isSubmitting) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    isSubmitting = true;
+
+                    sendButton.disabled = true;
+                    sendButton.textContent = 'Enviando...';
+                    messageInput.readOnly = true;
+
+                    quickButtons.forEach(function(button) {
+                        button.disabled = true;
+                        button.classList.add('opacity-60', 'cursor-not-allowed');
+                    });
+
+                    if (loadingMessage) {
+                        loadingMessage.classList.remove('hidden');
+                    }
+                });
+                window.addEventListener('pageshow', function() {
+                    if (sendButton) {
+                        sendButton.disabled = false;
+                        sendButton.textContent = 'Enviar';
+                    }
+
+                    if (messageInput) {
+                        messageInput.readOnly = false;
+                    }
+
+                    if (loadingMessage) {
+                        loadingMessage.classList.add('hidden');
+                    }
+
+                    quickButtons.forEach(function(button) {
+                        button.disabled = false;
+                        button.classList.remove('opacity-60', 'cursor-not-allowed');
+                    });
+                });
+            }
         });
     </script>
 </body>

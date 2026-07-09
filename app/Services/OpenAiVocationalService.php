@@ -10,8 +10,8 @@ class OpenAiVocationalService
 {
     private const MAX_HISTORY_MESSAGES = 10;
     private const REQUEST_TIMEOUT_SECONDS = 45;
-    private const MAX_OUTPUT_TOKENS = 650;
-    private const MAX_RESPONSE_LENGTH = 1400;
+    private const MAX_OUTPUT_TOKENS = 1200;
+    private const MAX_RESPONSE_LENGTH = 3000;
 
     public function __construct(
         private VocationalSystemPromptService $promptService
@@ -38,6 +38,9 @@ class OpenAiVocationalService
                 'instructions' => $this->promptService->build($conversation),
                 'input' => $this->buildInput($conversation, $studentMessage),
                 'max_output_tokens' => self::MAX_OUTPUT_TOKENS,
+                'reasoning' => [
+                    'effort' => 'low',
+                ],
             ];
 
             $response = Http::timeout(self::REQUEST_TIMEOUT_SECONDS)
@@ -52,11 +55,32 @@ class OpenAiVocationalService
                 return $this->handleFailedResponse($response);
             }
 
-            $content = $this->extractContent($response->json());
+            $body = $response->json();
+
+            $status = data_get($body, 'status');
+            $incompleteReason = data_get($body, 'incomplete_details.reason');
+
+            if ($status === 'incomplete') {
+                Log::warning('OpenAI incomplete response', [
+                    'reason' => $incompleteReason,
+                    'body' => $this->sanitizeLogPayload($body),
+                ]);
+
+                $partialContent = $this->extractContent($body);
+
+                if ($partialContent) {
+                    return $this->limitResponseLength($partialContent)
+                        . "\n\nLa respuesta fue ajustada porque el modelo alcanzó un límite de generación. Puedes pedir que continúe desde este punto.";
+                }
+
+                return 'La IA no alcanzó a completar la respuesta. Para avanzar, reformula la pregunta en una parte más específica o pide una comparación paso a paso.';
+            }
+
+            $content = $this->extractContent($body);
 
             if (!$content) {
                 Log::warning('OpenAI empty response', [
-                    'body' => $this->sanitizeLogPayload($response->json()),
+                    'body' => $this->sanitizeLogPayload($body),
                 ]);
 
                 return 'No pude generar una respuesta completa en este momento. Podemos seguir con una orientación base: dime si quieres comparar universidad, IP, CFT, beneficios/FUAS, pedagogía o Fuerzas Armadas y de Orden.';
