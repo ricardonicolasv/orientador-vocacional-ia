@@ -1,43 +1,204 @@
 # 🎓 Orientador Vocacional IA
 
-Aplicación web desarrollada en **PHP con Laravel**, orientada a estudiantes de enseñanza media del **Instituto San José**.
+Plataforma web de orientación vocacional asistida por inteligencia artificial, desarrollada para estudiantes de enseñanza media del **Instituto San José**.
 
-El sistema permite que los estudiantes interactúen con un chat vocacional asistido por IA, seleccionen rutas de orientación y generen reportes individuales para ser revisados por un orientador.
+La aplicación permite registrar estudiantes, iniciar y retomar conversaciones vocacionales, explorar distintas rutas formativas, consultar dudas sobre admisión y beneficios, y generar informes versionados para el seguimiento del orientador.
 
-Actualmente el proyecto funciona como un **MVP funcional**, con soporte para:
+> **Estado actual:** MVP avanzado y funcional, desplegado en Render, con proveedores de IA configurables, dashboard privado, generación de informes y exportación PDF.
 
-- Modo local con lógica controlada.
-- Modo OpenAI preparado.
-- Modo Groq activo para pruebas con IA real.
-- Reportes vocacionales individuales.
-- Exportación de reportes en PDF.
-- Dashboard privado para el orientador.
+## 🌐 Demo
+
+**Aplicación desplegada:**  
+https://orientador-vocacional-ia.onrender.com
 
 ---
 
-## 📌 Estado actual del proyecto
+## 📌 Funcionalidades implementadas
 
-Funcionalidades implementadas:
+### 👨‍🎓 Experiencia del estudiante
 
-- Registro básico de estudiantes.
-- Selección de ruta vocacional.
-- Chat vocacional con respuestas locales.
-- Chat vocacional conectado a IA real mediante Groq.
-- Configuración de modo IA desde `.env`.
-- Guardado de conversaciones en base de datos.
-- Login de orientador mediante Laravel Breeze.
-- Dashboard privado para el orientador.
-- Estadísticas generales del sistema.
-- Filtros por curso, ruta, claridad vocacional y fechas.
-- Visualización de estudiantes registrados.
-- Visualización del historial de conversación.
-- Generación de reporte vocacional individual.
-- Vista de reporte en pantalla.
-- Descarga de reporte vocacional en PDF.
-- Indicador visual del modo IA activo.
-- Respuestas seguras para consultas sensibles sobre admisión universitaria.
-- Respuestas seguras para consultas sobre instituciones específicas.
-- Manejo de límite temporal de uso de Groq.
+- Registro con nombre, curso, colegio y consentimiento de uso orientativo.
+- Selección de una ruta vocacional antes de iniciar el chat.
+- Chat vocacional con historial persistente.
+- Código de acceso único para **retomar una orientación** posteriormente.
+- Visualización del proveedor de IA activo.
+- Preguntas de seguimiento para profundizar intereses, habilidades y preocupaciones.
+- Bloqueo de nuevos mensajes cuando una conversación ha sido finalizada.
+- Interfaz responsive para computador y dispositivos móviles.
+
+### 🤖 Inteligencia artificial configurable
+
+El proveedor se selecciona mediante la variable `AI_MODE`:
+
+- `local`: respuestas controladas sin consumir una API externa.
+- `openai`: integración con OpenAI mediante Responses API.
+- `gemini`: integración con Google Gemini.
+- `groq`: integración con modelos disponibles en GroqCloud.
+
+La configuración permite cambiar de proveedor sin modificar el flujo principal del chat.
+
+### 🛡️ Seguridad y control de respuestas
+
+- Prompt vocacional centralizado y compartido entre proveedores.
+- Control de alcance para evitar que el chat responda consultas externas al objetivo de la plataforma.
+- Respuestas locales seguras para información sensible o cambiante.
+- Validación especial para:
+  - PAES, NEM, Ranking y ponderaciones.
+  - Admisión universitaria.
+  - FUAS, gratuidad, becas, créditos y financiamiento.
+  - Instituciones específicas y sus carreras.
+  - Fuerzas Armadas, de Orden y Seguridad Pública.
+- Recomendación de verificar información oficial cuando pueda cambiar.
+- Prevención de respuestas duplicadas mediante control del historial enviado al proveedor.
+- Manejo de errores, cuotas, rate limits, respuestas vacías y fallos temporales de API.
+
+### 🧑‍🏫 Panel privado del orientador
+
+- Autenticación mediante Laravel Breeze.
+- Listado de estudiantes registrados.
+- Búsqueda por nombre y filtros por:
+  - Curso.
+  - Ruta vocacional.
+  - Claridad vocacional.
+  - Fecha inicial y final.
+- Visualización del detalle de cada estudiante.
+- Revisión de todas sus conversaciones y mensajes.
+- Indicadores generales de uso.
+- Visualización del modo de IA activo.
+
+### 📊 Estadísticas del dashboard
+
+- Total de estudiantes registrados.
+- Total de conversaciones.
+- Conversaciones activas.
+- Informes generados.
+- Rutas vocacionales más consultadas.
+- Distribución de claridad vocacional.
+- Cursos con mayor uso.
+- Estudiantes con y sin informe.
+
+### 📄 Informes vocacionales
+
+Cada informe se construye a partir de la conversación del estudiante e incluye:
+
+- Datos del estudiante.
+- Ruta explorada.
+- Intereses y antecedentes mencionados.
+- Áreas vocacionales detectadas.
+- Dudas principales.
+- Nivel de claridad vocacional: bajo, medio o alto.
+- Recomendaciones sugeridas.
+- Resumen en lenguaje claro para el estudiante.
+- Sección técnica para el orientador.
+- Fecha, conversación y versión del informe.
+
+### 🗂️ Versionado e historial de informes
+
+Si el estudiante continúa conversando después de haber generado un informe, el orientador puede crear una nueva versión.
+
+- Los informes anteriores se conservan.
+- Un informe queda marcado como **actual**.
+- Cada versión registra hasta qué mensaje fue considerada.
+- El detalle del estudiante muestra el historial de informes.
+- Cada versión puede visualizarse y descargarse en PDF.
+
+### 🧾 Exportación PDF
+
+- Generación de PDF con DomPDF.
+- Diseño institucional y responsive en la vista web.
+- Descarga directa mediante rutas relativas compatibles con HTTPS.
+- Identificación de estudiante, conversación, informe y versión.
+
+---
+
+## 🎯 Objetivo del sistema
+
+Apoyar el proceso de orientación vocacional de estudiantes de enseñanza media, especialmente de **3° y 4° medio**, mediante una herramienta que permita:
+
+- Ordenar intereses, habilidades y dudas.
+- Explorar carreras profesionales y técnicas.
+- Comparar universidad, Instituto Profesional y CFT.
+- Comprender rutas de admisión.
+- Revisar beneficios estudiantiles y financiamiento.
+- Explorar pedagogías.
+- Conocer rutas de Fuerzas Armadas, de Orden y Seguridad Pública.
+- Entregar información de apoyo al orientador del colegio.
+
+> La plataforma entrega orientación informativa y preliminar. No reemplaza la entrevista con el orientador ni la revisión de fuentes oficiales.
+
+---
+
+## 🧭 Rutas vocacionales disponibles
+
+### 1. Ruta universitaria
+
+Orientación sobre:
+
+- PAES.
+- NEM y Ranking.
+- Ponderaciones.
+- DEMRE y Acceso Educación Superior.
+- Carreras universitarias.
+- Mallas curriculares.
+- Acreditación.
+- Campo laboral y continuidad académica.
+
+### 2. Ruta técnico-profesional
+
+Orientación sobre:
+
+- Institutos Profesionales.
+- Centros de Formación Técnica.
+- Carreras técnicas y profesionales.
+- Duración y enfoque práctico.
+- Continuidad de estudios.
+- Empleabilidad y prácticas.
+- Beneficios estudiantiles.
+
+### 3. Beneficios y financiamiento
+
+Orientación sobre:
+
+- FUAS.
+- Gratuidad.
+- Becas.
+- Créditos.
+- Requisitos generales.
+- Documentación y etapas del proceso.
+- Instituciones adscritas.
+
+### 4. Pedagogías
+
+Orientación sobre:
+
+- Vocación docente.
+- Requisitos para estudiar pedagogía.
+- Alternativas del área educacional.
+- Acreditación.
+- Campo laboral.
+
+### 5. Fuerzas Armadas, de Orden y Seguridad Pública
+
+Orientación general sobre:
+
+- Ejército.
+- Armada.
+- Fuerza Aérea de Chile.
+- Carabineros.
+- Policía de Investigaciones.
+- Gendarmería.
+- Escuelas de oficiales y especialidades técnicas.
+- Etapas de admisión y preparación general.
+
+### 6. Exploración vocacional general
+
+Para estudiantes que todavía no tienen una decisión clara:
+
+- Identificación de intereses.
+- Preferencias de trabajo.
+- Habilidades percibidas.
+- Dificultades académicas.
+- Comparación inicial de áreas y rutas formativas.
 
 ---
 
@@ -45,466 +206,295 @@ Funcionalidades implementadas:
 
 | Tecnología | Uso |
 |---|---|
-| **PHP 8.2.12** | Lenguaje principal del backend |
+| **PHP 8.2** | Backend |
 | **Laravel 12.x** | Framework principal |
-| **MySQL / MariaDB** | Base de datos relacional |
-| **XAMPP** | Entorno local de desarrollo |
-| **Composer** | Gestor de dependencias PHP |
-| **Node.js + NPM** | Dependencias frontend y compilación |
-| **Blade** | Motor de plantillas |
-| **Tailwind CSS** | Diseño visual responsive |
-| **Laravel Breeze** | Autenticación |
-| **DomPDF** | Generación de reportes PDF |
-| **Groq API** | IA real para pruebas del chat vocacional |
-| **OpenAI API** | Integración preparada, configurable |
+| **Blade** | Vistas del servidor |
+| **Tailwind CSS** | Interfaz responsive |
+| **Alpine.js** | Interacciones ligeras de interfaz |
+| **Vite** | Compilación de recursos frontend |
+| **Laravel Breeze** | Autenticación del orientador |
+| **DomPDF** | Exportación de informes PDF |
+| **MySQL / MariaDB** | Base de datos en desarrollo local |
+| **PostgreSQL** | Base de datos en producción |
+| **OpenAI API** | Proveedor de IA mediante Responses API |
+| **Google Gemini API** | Proveedor alternativo de IA |
+| **Groq API** | Proveedor alternativo de IA |
+| **Docker + Apache** | Contenedor de producción |
+| **Render** | Hosting de aplicación y PostgreSQL |
 | **Git / GitHub** | Control de versiones |
 
 ---
 
-## 🎯 Objetivo del sistema
+## 🧠 Arquitectura de IA
 
-El objetivo principal es crear una plataforma de orientación vocacional asistida por IA para estudiantes de enseñanza media, especialmente de **3° y 4° medio**.
+### Servicios principales
 
-La aplicación busca apoyar al estudiante en temas como:
+```text
+app/Services/
+├── AiVocationalService.php
+├── OpenAiVocationalService.php
+├── GeminiVocationalService.php
+├── GroqVocationalService.php
+├── VocationalSystemPromptService.php
+├── SafeVocationalResponseService.php
+├── VocationalScopeGuardService.php
+└── ReportGeneratorService.php
+```
 
-- Qué carrera estudiar.
-- Qué ruta formativa seguir.
-- Diferencias entre universidad, instituto profesional y CFT.
-- Opciones técnico-profesionales.
-- Beneficios estudiantiles, becas, gratuidad y FUAS.
-- Carreras pedagógicas.
-- Opciones en Fuerzas Armadas, de Orden y Seguridad Pública.
-- Comparación inicial de áreas de interés.
-- Generación de reportes para seguimiento del orientador.
+### Flujo de procesamiento del mensaje
 
-> Esta herramienta no reemplaza el trabajo del orientador. Su función es apoyar el proceso de orientación, ordenar intereses, identificar dudas y entregar información inicial al estudiante.
+```text
+1. Validar y guardar el mensaje del estudiante
+2. Verificar si la consulta está fuera del alcance vocacional
+3. Aplicar respuestas seguras para información sensible o cambiante
+4. Seleccionar proveedor según AI_MODE
+5. Enviar historial reciente y prompt compartido al proveedor
+6. Guardar la respuesta del asistente
+7. Mostrar la conversación actualizada
+```
+
+### Prompt compartido
+
+`VocationalSystemPromptService` concentra las reglas comunes para que OpenAI, Gemini y Groq mantengan un comportamiento coherente:
+
+- Español chileno neutro.
+- Respuestas claras y breves.
+- Seguimiento contextual.
+- Máximo de alternativas y preguntas de seguimiento.
+- Prohibición de inventar requisitos, fechas, puntajes, beneficios o carreras.
+- Redirección de consultas externas al objetivo de la aplicación.
+
+### Respuestas seguras
+
+`SafeVocationalResponseService` intercepta consultas en las que no es conveniente depender exclusivamente del modelo externo, como:
+
+- Requisitos de admisión.
+- Beneficios estudiantiles.
+- Instituciones específicas.
+- Comparaciones de carreras.
+- Fuerzas Armadas y de Orden.
+
+### Control de alcance
+
+`VocationalScopeGuardService` evita que el chat sea utilizado como asistente general para temas ajenos a la orientación vocacional.
 
 ---
 
-## 🤖 Modos de IA disponibles
+## 🤖 Configuración de proveedores
 
-El sistema puede funcionar con distintos modos de IA configurables desde el archivo `.env`.
+Archivo principal:
 
-env
+```text
+config/ai.php
+```
+
+### Modo local
+
+```env
 AI_MODE=local
+```
 
-o:
+No requiere API externa.
 
-AI_MODE=groq
+### OpenAI
 
-o:
-
+```env
 AI_MODE=openai
-Modo local
+OPENAI_API_KEY=tu_api_key
+OPENAI_MODEL=gpt-5-mini
+```
 
-Usa lógica interna controlada mediante:
+La integración utiliza:
 
-app/Services/AiVocationalService.php
+```text
+https://api.openai.com/v1/responses
+```
 
-Este modo no depende de una API externa.
+El uso de OpenAI API requiere una cuenta con billing o créditos disponibles.
 
-Ventajas:
+### Google Gemini
 
-No consume tokens.
-Es estable.
-Es útil para desarrollo inicial.
-Evita errores de cuota o conexión.
-Modo Groq
+```env
+AI_MODE=gemini
+GEMINI_API_KEY=tu_api_key
+GEMINI_MODEL=gemini-2.5-flash
+```
 
-Usa IA real mediante Groq:
+El servicio incluye configuración de tokens, manejo de respuestas truncadas y motivos de finalización.
 
-app/Services/GroqVocationalService.php
+### Groq
 
-Este modo permite respuestas más naturales, contextuales y flexibles.
-
-Variables necesarias:
-
+```env
 AI_MODE=groq
-GROQ_API_KEY=
+GROQ_API_KEY=tu_api_key
 GROQ_MODEL=llama-3.1-8b-instant
+```
 
-Groq se utiliza actualmente como proveedor principal para pruebas de IA real.
+El identificador del modelo debe coincidir con un modelo activo en GroqCloud. Puede reemplazarse por otro modelo compatible desde las variables de entorno.
 
-Modo OpenAI
+> Nunca publiques claves reales en GitHub. Deben almacenarse únicamente en `.env` local o en las variables de entorno de Render.
 
-La integración con OpenAI está preparada mediante:
-
-app/Services/OpenAiVocationalService.php
-
-Variables necesarias:
-
-AI_MODE=openai
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4.1-mini
-
-Importante: el uso de la API de OpenAI requiere billing/créditos activos en OpenAI Platform.
-
-## 🧭 Rutas vocacionales consideradas
-
-1. Ruta universitaria
-
-Considera orientación sobre:
-
-PAES.
-DEMRE.
-Acceso Mineduc.
-NEM, Ranking y ponderaciones.
-Carreras universitarias.
-Acreditación.
-Campo laboral y empleabilidad.
-
-2. Ruta técnico-profesional
-
-Considera orientación sobre:
-
-Institutos Profesionales.
-Centros de Formación Técnica.
-Carreras técnicas.
-Continuidad de estudios.
-Empleabilidad.
-Beneficios estudiantiles.
-
-3. Beneficios y financiamiento
-
-Considera orientación sobre:
-
-FUAS.
-Gratuidad.
-Becas.
-Créditos.
-Requisitos generales.
-Fechas importantes.
-
-4. Pedagogías
-
-Considera orientación sobre:
-
-Vocación docente.
-Requisitos para estudiar pedagogía.
-Acreditación.
-Alternativas en educación.
-
-5. Fuerzas Armadas, de Orden y Seguridad Pública
-
-Considera orientación sobre:
-
-Escuela Militar.
-Armada de Chile.
-FACh.
-Carabineros.
-PDI.
-Gendarmería.
-
-6. No sé aún / Ayúdame a explorar
-
-Considera orientación sobre:
-
-Exploración general de intereses.
-Preguntas orientadoras.
-Detección inicial de áreas vocacionales.
-Comparación de posibles caminos formativos.
-
-## 🧩 Módulos principales
-
-- 👨‍🎓 1. Registro del estudiante
-
-El estudiante ingresa:
-
-Nombre.
-Curso.
-Colegio.
-Ruta vocacional seleccionada.
-Aceptación de consentimiento simple.
-
-El sistema no solicita datos sensibles como RUT, dirección exacta, información médica o datos familiares delicados.
-
-- 💬 2. Chat vocacional
-
-El estudiante puede conversar con el asistente vocacional.
-
-El chat permite:
-
-Enviar mensajes.
-Guardar historial.
-Usar respuestas locales o IA real.
-Finalizar conversación.
-Bloquear nuevos mensajes cuando la conversación está finalizada.
-Mostrar el modo IA activo: Local, OpenAI o Groq.
-Usar preguntas rápidas predefinidas.
-
-Servicios asociados:
-
-app/Services/AiVocationalService.php
-app/Services/GroqVocationalService.php
-app/Services/OpenAiVocationalService.php
-
-- 🧑‍🏫 3. Panel del orientador
-
-El orientador accede mediante login privado.
-
-Desde el panel puede:
-
-Ver estudiantes registrados.
-Buscar estudiantes.
-Filtrar por curso.
-Filtrar por ruta vocacional.
-Filtrar por claridad vocacional.
-Filtrar por fecha desde / hasta.
-Ver estadísticas generales.
-Revisar conversaciones asociadas.
-Consultar el detalle del chat.
-Generar reportes vocacionales.
-Descargar reportes en PDF.
-
-- 📊 4. Estadísticas del dashboard
-
-El dashboard incluye:
-
-Total de estudiantes registrados.
-Total de conversaciones.
-Conversaciones activas.
-Reportes generados.
-Rutas vocacionales más consultadas.
-Claridad vocacional estimada.
-Cursos con mayor uso.
-Estudiantes sin reporte.
-Indicador del modo IA activo.
-
-- 📄 5. Reporte vocacional individual
-
-El sistema genera un reporte a partir de la conversación del estudiante.
-
-El reporte incluye:
-
-Nombre del estudiante.
-Curso.
-Colegio.
-Ruta explorada.
-Intereses mencionados.
-Áreas detectadas.
-Dudas principales.
-Nivel de claridad vocacional.
-Recomendaciones sugeridas.
-Resumen para el estudiante.
-Sección técnica para el orientador.
-
-Niveles de claridad:
-
-Nivel	Descripción
-Bajo	El estudiante aún no identifica áreas o alternativas claras.
-Medio	Tiene intereses generales, pero necesita comparar opciones.
-Alto	Tiene alternativas concretas y necesita información específica.
-
-- 🧾 6. Exportación PDF
-
-Los reportes pueden descargarse como PDF mediante DomPDF.
-
-Vista PDF:
-
-resources/views/reports/pdf.blade.php
-
-Controlador asociado:
-
-app/Http/Controllers/ReportController.php
-
-## 🛡️ Respuestas seguras implementadas
-
-El sistema incluye reglas locales para evitar que la IA invente datos en temas sensibles.
-
-Admisión universitaria
-
-Cuando el estudiante pregunta por requisitos para entrar a una universidad específica, el sistema responde de forma segura y recomienda revisar fuentes oficiales.
-
-Ejemplo de temas controlados:
-
-PAES.
-NEM.
-Ranking.
-Ponderaciones.
-Vacantes.
-Puntajes de corte referenciales.
-Fichas oficiales de carrera.
-Sitios de admisión institucional.
-
-Se evita inventar:
-
-Promedios mínimos.
-Puntajes específicos.
-Requisitos internos no verificados.
-Carreras que no han sido confirmadas.
-Datos oficiales no respaldados.
-Beneficios, becas, gratuidad y FUAS
-
-El sistema corrige explícitamente que:
-
-FUAS = Formulario Único de Acreditación Socioeconómica
-
-No se asocia FUAS con Fuerzas Armadas ni con instituciones militares.
-
-Se recomienda verificar siempre en:
-
-Beneficios Estudiantiles Mineduc.
-FUAS.
-ChileAtiende.
-Instituciones específicas
-
-Cuando el estudiante pregunta por instituciones como:
-
-AIEP.
-DUOC UC.
-INACAP.
-Santo Tomás.
-Universidad de Concepción.
-Universidad del Bío-Bío.
-CFT.
-Instituto profesional.
-
-El sistema evita inventar carreras, sedes o mallas y recomienda revisar la oferta académica oficial.
-
-## 🗂️ Estructura principal del proyecto
-
-app/
-├── Http/
-│   └── Controllers/
-│       ├── StudentController.php
-│       ├── ChatController.php
-│       ├── ReportController.php
-│       └── OrientadorDashboardController.php
-│
-├── Models/
-│   ├── Student.php
-│   ├── Conversation.php
-│   ├── Message.php
-│   ├── VocationalReport.php
-│   └── VocationalRoute.php
-│
-└── Services/
-    ├── AiVocationalService.php
-    ├── GroqVocationalService.php
-    ├── OpenAiVocationalService.php
-    └── ReportGeneratorService.php
-
-resources/
-└── views/
-    ├── welcome.blade.php
-    ├── student/
-    │   └── create.blade.php
-    ├── chat/
-    │   └── show.blade.php
-    ├── orientador/
-    │   ├── dashboard.blade.php
-    │   └── student-show.blade.php
-    └── reports/
-        ├── show.blade.php
-        └── pdf.blade.php
-
-database/
-└── migrations/
-    ├── create_students_table.php
-    ├── create_conversations_table.php
-    ├── create_messages_table.php
-    ├── create_vocational_reports_table.php
-    └── create_vocational_routes_table.php
+---
 
 ## 🗄️ Modelo de datos principal
 
-students
+### `students`
 
-Guarda los datos básicos del estudiante.
+- `id`
+- `name`
+- `course`
+- `school`
+- `consent_accepted`
+- `access_code`
+- `created_at`
+- `updated_at`
 
-Campo	Descripción
-id	Identificador del estudiante
-name	Nombre del estudiante
-course	Curso
-school	Colegio
-consent_accepted	Aceptación de consentimiento
-timestamps	Fechas de creación y actualización
-conversations
+### `conversations`
 
-Guarda las conversaciones iniciadas por cada estudiante.
+- `id`
+- `student_id`
+- `selected_route`
+- `status`
+- `started_at`
+- `finished_at`
+- `created_at`
+- `updated_at`
 
-Campo	Descripción
-id	Identificador de la conversación
-student_id	Relación con estudiante
-selected_route	Ruta vocacional seleccionada
-status	Estado de la conversación
-started_at	Fecha de inicio
-finished_at	Fecha de término
-timestamps	Fechas de creación y actualización
-messages
+### `messages`
 
-Guarda los mensajes del estudiante y del asistente.
+- `id`
+- `conversation_id`
+- `sender`
+- `content`
+- `created_at`
+- `updated_at`
 
-Campo	Descripción
-id	Identificador del mensaje
-conversation_id	Relación con conversación
-sender	Emisor del mensaje
-content	Contenido del mensaje
-timestamps	Fechas de creación y actualización
+Valores principales de `sender`:
 
-Valores posibles para sender:
-
+```text
 student
 ai
-vocational_reports
+```
 
-Guarda el reporte vocacional generado desde una conversación.
+### `vocational_reports`
 
-Campo	Descripción
-id	Identificador del reporte
-student_id	Relación con estudiante
-conversation_id	Relación con conversación
-interests	Intereses mencionados
-detected_areas	Áreas detectadas
-explored_routes	Ruta explorada
-main_questions	Dudas principales
-clarity_level	Nivel de claridad vocacional
-recommendations	Recomendaciones sugeridas
-student_summary	Resumen para estudiante
-orientador_notes	Notas técnicas para orientador
-timestamps	Fechas de creación y actualización
-vocational_routes
+- `id`
+- `student_id`
+- `conversation_id`
+- `version`
+- `is_current`
+- `generated_until_message_id`
+- `interests`
+- `detected_areas`
+- `explored_routes`
+- `main_questions`
+- `clarity_level`
+- `recommendations`
+- `student_summary`
+- `orientador_notes`
+- `created_at`
+- `updated_at`
 
-Tabla preparada para administrar rutas vocacionales.
+---
 
-Campo	Descripción
-id	Identificador de la ruta
-name	Nombre de la ruta
-slug	Identificador amigable
-description	Descripción
-timestamps	Fechas de creación y actualización
+## 🔄 Flujo del estudiante
 
-## ⚙️ Instalación del proyecto en local
+```text
+Inicio
+→ Registro y consentimiento
+→ Selección de ruta
+→ Generación de código de acceso
+→ Chat vocacional
+→ Continuación o finalización de la conversación
+→ Retomar posteriormente mediante código
+```
 
-- 1. Clonar el repositorio
+## 🔄 Flujo del orientador
+
+```text
+Login
+→ Dashboard
+→ Búsqueda y filtros
+→ Detalle del estudiante
+→ Revisión de conversaciones
+→ Generación de informe
+→ Visualización y descarga PDF
+→ Generación de nuevas versiones
+→ Consulta del historial de informes
+```
+
+---
+
+## 🌐 Rutas principales
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/` | Pantalla de inicio |
+| `GET` | `/estudiante/inicio` | Registro del estudiante |
+| `POST` | `/estudiante` | Crea estudiante y conversación |
+| `GET` | `/estudiante/retomar` | Formulario para retomar orientación |
+| `POST` | `/estudiante/retomar` | Busca conversación mediante código |
+| `GET` | `/chat/{conversation}` | Muestra la conversación |
+| `POST` | `/chat/{conversation}/mensaje` | Envía mensaje y genera respuesta |
+| `POST` | `/chat/{conversation}/finalizar` | Finaliza la conversación |
+| `GET` | `/login` | Acceso del orientador |
+| `GET` | `/orientador/dashboard` | Dashboard privado |
+| `GET` | `/orientador/estudiantes/{student}` | Detalle del estudiante |
+| `POST` | `/orientador/conversaciones/{conversation}/generar-reporte` | Genera una nueva versión del informe |
+| `GET` | `/orientador/reportes/{report}` | Vista de un informe |
+| `GET` | `/orientador/reportes/{report}/pdf` | Descarga PDF |
+
+---
+
+## ⚙️ Instalación local
+
+### Requisitos
+
+- PHP 8.2 o superior.
+- Composer.
+- Node.js y NPM.
+- MySQL o MariaDB.
+- Extensiones PHP requeridas por Laravel y DomPDF.
+
+### 1. Clonar el repositorio
+
+```bash
 git clone https://github.com/ricardonicolasv/orientador-vocacional-ia.git
 cd orientador-vocacional-ia
-- 2. Instalar dependencias PHP
+```
+
+### 2. Instalar dependencias
+
+```bash
 composer install
-- 3. Instalar dependencias frontend
 npm install
-- 4. Crear archivo .env
+```
 
-En Windows:
+### 3. Crear `.env`
 
+Windows:
+
+```powershell
 copy .env.example .env
+```
 
-En Linux/Mac:
+Linux/macOS:
 
+```bash
 cp .env.example .env
-- 5. Generar clave de aplicación
+```
+
+### 4. Generar clave de Laravel
+
+```bash
 php artisan key:generate
-- 6. Configurar base de datos
+```
 
-Crear una base de datos en MySQL/phpMyAdmin:
+### 5. Configurar MySQL local
 
-CREATE DATABASE orientador_vocacional_ia;
-
-Configurar el archivo .env:
-
+```env
 APP_NAME="Orientador Vocacional IA"
 APP_ENV=local
-APP_KEY=
 APP_DEBUG=true
 APP_URL=http://127.0.0.1:8000
 
@@ -514,186 +504,245 @@ DB_PORT=3306
 DB_DATABASE=orientador_vocacional_ia
 DB_USERNAME=root
 DB_PASSWORD=
-- 7. Configurar modo de IA
 
-Modo local:
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+```
 
-AI_MODE=local
+Crear la base de datos:
 
-Modo Groq:
+```sql
+CREATE DATABASE orientador_vocacional_ia;
+```
 
-AI_MODE=groq
-GROQ_API_KEY=
-GROQ_MODEL=llama-3.1-8b-instant
+### 6. Configurar IA
 
-Modo OpenAI:
+Ejemplo con OpenAI:
+
+```env
+AI_MODE=openai
+OPENAI_API_KEY=tu_api_key
+OPENAI_MODEL=gpt-5-mini
+```
+
+### 7. Ejecutar migraciones
+
+```bash
+php artisan migrate
+```
+
+### 8. Compilar frontend
+
+Desarrollo:
+
+```bash
+npm run dev
+```
+
+Producción local:
+
+```bash
+npm run build
+```
+
+### 9. Levantar Laravel
+
+```bash
+php artisan serve
+```
+
+Aplicación local:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## 🚀 Despliegue en Render
+
+El repositorio incluye:
+
+- `Dockerfile`
+- `.dockerignore`
+- `start.sh`
+- Configuración de Apache para servir `/public`
+- Compilación de Vite durante el build
+- Ejecución automática de migraciones
+- Seeder para crear o actualizar el usuario orientador de producción
+- Caché de configuración, rutas y vistas
+
+### Variables principales de producción
+
+```env
+APP_NAME="Orientador Vocacional IA"
+APP_ENV=production
+APP_KEY=base64:...
+APP_DEBUG=false
+APP_URL=https://orientador-vocacional-ia.onrender.com
+ASSET_URL=https://orientador-vocacional-ia.onrender.com
+
+DB_CONNECTION=pgsql
+DB_URL=postgresql://...
+
+SESSION_DRIVER=database
+CACHE_STORE=file
+QUEUE_CONNECTION=database
 
 AI_MODE=openai
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4.1-mini
+OPENAI_API_KEY=tu_api_key
+OPENAI_MODEL=gpt-5-mini
 
-El archivo .env no debe subirse a GitHub.
+ADMIN_NAME=Orientador
+ADMIN_EMAIL=orientador@test.cl
+ADMIN_PASSWORD=una_clave_segura
+```
 
-- 8. Ejecutar migraciones
-php artisan migrate
+> En Render debe utilizarse la URL interna de PostgreSQL. El archivo `.env` local no debe reemplazarse por la configuración de producción.
 
-Si se necesita reiniciar completamente la base de datos:
+---
 
-php artisan migrate:fresh
-- 9. Levantar servidor Laravel
-php artisan serve
+## 🗂️ Estructura principal
 
-URL local:
+```text
+app/
+├── Http/Controllers/
+│   ├── StudentController.php
+│   ├── ChatController.php
+│   ├── ReportController.php
+│   └── OrientadorDashboardController.php
+├── Models/
+│   ├── Student.php
+│   ├── Conversation.php
+│   ├── Message.php
+│   ├── VocationalReport.php
+│   ├── VocationalRoute.php
+│   └── User.php
+└── Services/
+    ├── AiVocationalService.php
+    ├── OpenAiVocationalService.php
+    ├── GeminiVocationalService.php
+    ├── GroqVocationalService.php
+    ├── VocationalSystemPromptService.php
+    ├── SafeVocationalResponseService.php
+    ├── VocationalScopeGuardService.php
+    └── ReportGeneratorService.php
 
-http://127.0.0.1:8000
-- 10. Compilar assets con Vite
+resources/views/
+├── welcome.blade.php
+├── student/
+│   ├── create.blade.php
+│   └── resume.blade.php
+├── chat/
+│   └── show.blade.php
+├── orientador/
+│   ├── dashboard.blade.php
+│   └── student-show.blade.php
+└── reports/
+    ├── show.blade.php
+    └── pdf.blade.php
+```
 
-En otra terminal:
-
-npm run dev
-
-Si PowerShell bloquea NPM, usar:
-
-npm.cmd run dev
-
-## 🧪 Comandos útiles
-
-Acción	Comando
-Limpiar caché general	php artisan optimize:clear
-Limpiar vistas	php artisan view:clear
-Limpiar rutas	php artisan route:clear
-Limpiar configuración	php artisan config:clear
-Ver rutas registradas	php artisan route:list
-Ejecutar migraciones	php artisan migrate
-Reiniciar base de datos	php artisan migrate:fresh
-Ejecutar servidor local	php artisan serve
-Compilar frontend	npm run dev
-Compilar frontend en PowerShell	npm.cmd run dev
-
-## 🌐 Rutas principales del sistema
-
-Método	Ruta	Descripción
-GET	/	Pantalla de inicio
-GET	/estudiante/inicio	Formulario de registro del estudiante
-POST	/estudiante	Guarda estudiante y crea conversación
-GET	/chat/{conversation}	Muestra chat vocacional
-POST	/chat/{conversation}/mensaje	Guarda mensaje y genera respuesta
-POST	/chat/{conversation}/finalizar	Finaliza conversación
-GET	/login	Login del orientador
-GET	/orientador/dashboard	Dashboard del orientador
-GET	/orientador/estudiantes/{student}	Detalle del estudiante
-POST	/orientador/conversaciones/{conversation}/generar-reporte	Genera reporte
-GET	/orientador/reportes/{report}	Muestra reporte
-GET	/orientador/reportes/{report}/pdf	Descarga reporte PDF
+---
 
 ## 🔐 Seguridad y privacidad
 
-El sistema considera las siguientes medidas básicas:
+- Las API keys y contraseñas se administran con variables de entorno.
+- `.env` no debe subirse al repositorio.
+- El panel del orientador está protegido mediante autenticación.
+- La aplicación no solicita RUT, dirección exacta, información médica ni datos familiares delicados.
+- Las consultas externas al objetivo vocacional se bloquean o redirigen.
+- La información institucional cambiante debe verificarse en fuentes oficiales.
+- Los informes tienen carácter orientativo y preliminar.
 
-No se sube el archivo .env al repositorio.
-Las credenciales se manejan mediante variables de entorno.
-El panel del orientador está protegido por autenticación.
-No se solicita RUT ni datos sensibles innecesarios.
-No se solicita dirección exacta ni información médica.
-Los reportes son de carácter orientativo.
-La información debe utilizarse solo con fines de orientación vocacional escolar.
-La IA no debe entregar requisitos oficiales sin recomendar verificación en fuentes oficiales.
+Archivos y directorios que no deben publicarse:
 
-Archivos que no deben subirse a GitHub:
-
+```text
 .env
 /vendor
 /node_modules
-/public/build
+/public/hot
+/storage/logs/*
+```
 
-## 🔁 Uso de Git y GitHub
-
-Guardar cambios futuros
-git status
-git add .
-git commit -m "Descripción del cambio"
-git push
-Verificar que .env no se suba
-git status
-git check-ignore -v .env
-
-## 🔄 Flujo actual del estudiante
-
-Inicio
-→ Registro del estudiante
-→ Selección de ruta vocacional
-→ Inicio de conversación
-→ Chat vocacional
-→ Finalizar conversación
-→ Guardado de mensajes
-
-## 🔄 Flujo actual del orientador
-
-Login
-→ Dashboard
-→ Lista de estudiantes
-→ Filtros y estadísticas
-→ Detalle del estudiante
-→ Revisión de conversación
-→ Generación de reporte
-→ Visualización de reporte
-→ Descarga PDF
-
-## 🚧 Próximas mejoras planificadas
-
-Reporte híbrido con IA.
-Mejorar diseño institucional del PDF.
-Panel administrativo de rutas vocacionales.
-Gestión avanzada de usuarios y roles.
-Reportes generales por curso.
-Gráficos avanzados en dashboard.
-Base documental con fuentes oficiales.
-Integración con fuentes oficiales externas.
-Sistema de actualización de información oficial.
-Exportación de estadísticas.
-Mejor control de límites y fallback de IA.
-Pruebas automatizadas.
+---
 
 ## 📚 Fuentes oficiales consideradas
 
-La aplicación está pensada para consultar o considerar información oficial de:
+La plataforma está preparada para orientar al estudiante hacia fuentes como:
 
-DEMRE.
-Acceso Educación Superior - Mineduc.
-Mi Futuro - Mineduc.
-Comisión Nacional de Acreditación, CNA Chile.
-FUAS.
-Beneficios Estudiantiles Mineduc.
-ChileAtiende.
-Elige Educar.
-Quiero Ser Profe.
-Escuela Militar.
-Armada de Chile.
-Escuela Naval Arturo Prat.
-FACh.
-Carabineros de Chile.
-PDI.
-Gendarmería de Chile.
-Sitios oficiales de universidades, institutos profesionales y CFT.
+- DEMRE.
+- Acceso Educación Superior – Mineduc.
+- Mi Futuro – Mineduc.
+- Comisión Nacional de Acreditación.
+- FUAS y Beneficios Estudiantiles Mineduc.
+- ChileAtiende.
+- Elige Educar.
+- Quiero Ser Profe.
+- Sitios oficiales de universidades, IP y CFT.
+- Escuela Militar.
+- Armada de Chile y Escuela Naval.
+- Fuerza Aérea de Chile.
+- Carabineros de Chile.
+- Policía de Investigaciones.
+- Gendarmería de Chile.
+
+La aplicación no realiza todavía una búsqueda web automática en tiempo real. Las fechas, requisitos, carreras, sedes, aranceles, ponderaciones y beneficios deben confirmarse directamente en las fuentes oficiales.
+
+---
+
+## 🧪 Comandos útiles
+
+| Acción | Comando |
+|---|---|
+| Limpiar cachés | `php artisan optimize:clear` |
+| Limpiar configuración | `php artisan config:clear` |
+| Limpiar vistas | `php artisan view:clear` |
+| Ver rutas | `php artisan route:list` |
+| Ejecutar migraciones | `php artisan migrate` |
+| Reiniciar DB local | `php artisan migrate:fresh` |
+| Ejecutar servidor | `php artisan serve` |
+| Compilar frontend | `npm run dev` |
+| Build frontend | `npm run build` |
+
+---
+
+## 🚧 Próximas mejoras
+
+- Mejorar el contenido profesional de los informes.
+- Agregar resumen ejecutivo, fortalezas, preocupaciones y próximos pasos.
+- Incorporar preguntas sugeridas para la entrevista del orientador.
+- Integrar una base documental con fuentes oficiales actualizables.
+- Conectar fuentes externas mediante búsqueda autorizada o RAG.
+- Incorporar perfil académico con notas, NEM, Ranking y PAES en una etapa posterior.
+- Agregar pruebas automatizadas para servicios, reportes y control de alcance.
+- Incorporar roles y gestión avanzada de usuarios.
+- Exportar estadísticas y reportes generales por curso.
+- Mejorar observabilidad, monitoreo y métricas de consumo de IA.
+
+---
 
 ## ⚠️ Consideraciones importantes
 
-Este sistema entrega orientación informativa y preliminar.
+- La orientación generada no define una decisión final.
+- El sistema no reemplaza el acompañamiento profesional del orientador.
+- Las respuestas de IA pueden requerir revisión humana.
+- Los datos oficiales pueden cambiar entre procesos de admisión.
+- El uso de APIs externas puede generar costos, límites de cuota o indisponibilidad temporal.
 
-No reemplaza la entrevista con el orientador del colegio ni la revisión directa de fuentes oficiales.
-
-Las fechas, requisitos, beneficios, ponderaciones, procesos de admisión, carreras disponibles, sedes, aranceles y condiciones institucionales pueden cambiar, por lo que siempre deben verificarse en las páginas oficiales correspondientes.
+---
 
 ## 👨‍💻 Autor
 
-Proyecto desarrollado por:
+**Ricardo Vidal**  
+Ingeniero en Informática  
+GitHub: [@ricardonicolasv](https://github.com/ricardonicolasv)
 
-Ricardo Vidal
-Ingeniería en Informática
-GitHub: @ricardonicolasv
+---
 
 ## 📄 Licencia
 
-Proyecto desarrollado con fines académicos y de prototipado.
+Proyecto desarrollado con fines académicos, de prototipado y validación de una solución de orientación vocacional escolar.
 
-El framework Laravel es software open-source bajo licencia MIT.
+Laravel se distribuye bajo licencia MIT.
