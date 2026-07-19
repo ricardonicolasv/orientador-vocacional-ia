@@ -738,6 +738,7 @@ La aplicación no realiza todavía una búsqueda web automática en tiempo real.
 **Ricardo Vidal**  
 Ingeniero en Informática  
 GitHub: [@ricardonicolasv](https://github.com/ricardonicolasv)
+Linkedin: [@ricarovidalalarcon](https://www.linkedin.com/in/ricardovidalalarcon/)
 
 ---
 
