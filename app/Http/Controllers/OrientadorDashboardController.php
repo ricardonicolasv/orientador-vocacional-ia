@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Student;
+use App\Models\Message;
 use App\Models\VocationalReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrientadorDashboardController extends Controller
 {
@@ -185,5 +187,71 @@ class OrientadorDashboardController extends Controller
         ]);
 
         return view('orientador.student-show', compact('student'));
+    }
+    public function destroyStudent(Student $student)
+    {
+        try {
+            $studentName = $student->name;
+
+            DB::transaction(function () use ($student) {
+                $conversationIds = Conversation::query()
+                    ->where('student_id', $student->id)
+                    ->pluck('id');
+
+                /*
+             * Primero eliminamos los informes porque pueden tener
+             * referencias tanto al estudiante como a mensajes.
+             */
+                VocationalReport::query()
+                    ->where(function ($query) use ($student, $conversationIds) {
+                        $query->where('student_id', $student->id);
+
+                        if ($conversationIds->isNotEmpty()) {
+                            $query->orWhereIn(
+                                'conversation_id',
+                                $conversationIds
+                            );
+                        }
+                    })
+                    ->delete();
+
+                /*
+             * Luego eliminamos todos los mensajes de las conversaciones.
+             */
+                if ($conversationIds->isNotEmpty()) {
+                    Message::query()
+                        ->whereIn('conversation_id', $conversationIds)
+                        ->delete();
+
+                    Conversation::query()
+                        ->whereIn('id', $conversationIds)
+                        ->delete();
+                }
+
+                /*
+             * Finalmente eliminamos el registro del estudiante.
+             */
+                $student->delete();
+            });
+
+            return redirect()
+                ->route('orientador.dashboard')
+                ->with(
+                    'success',
+                    "El registro de {$studentName} y toda su información asociada fueron eliminados correctamente."
+                );
+        } catch (\Throwable $exception) {
+            Log::error('Error al eliminar estudiante', [
+                'student_id' => $student->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()
+                ->route('orientador.dashboard')
+                ->with(
+                    'error',
+                    'No fue posible eliminar el registro. Intenta nuevamente.'
+                );
+        }
     }
 }

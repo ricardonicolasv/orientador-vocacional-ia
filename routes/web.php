@@ -29,14 +29,25 @@ Route::middleware(['auth'])->prefix('orientador')->group(function () {
     Route::get('/estudiantes/{student}', [OrientadorDashboardController::class, 'showStudent'])
         ->name('orientador.students.show');
 
-    Route::post('/conversaciones/{conversation}/generar-reporte', [ReportController::class, 'generate'])
-        ->name('orientador.reports.generate');
+    Route::delete('/estudiantes/{student}', [
+        OrientadorDashboardController::class,
+        'destroyStudent',
+    ])->name('orientador.students.destroy');
 
-    Route::get('/reportes/{report}', [ReportController::class, 'showForOrientador'])
-        ->name('orientador.reports.show');
+    Route::post('/conversaciones/{conversation}/generar-reporte', [
+        ReportController::class,
+        'generate',
+    ])->name('orientador.reports.generate');
 
-    Route::get('/reportes/{report}/pdf', [ReportController::class, 'downloadPdf'])
-        ->name('orientador.reports.pdf');
+    Route::get('/reportes/{report}', [
+        ReportController::class,
+        'showForOrientador',
+    ])->name('orientador.reports.show');
+
+    Route::get('/reportes/{report}/pdf', [
+        ReportController::class,
+        'downloadPdf',
+    ])->name('orientador.reports.pdf');
 });
 
 /*

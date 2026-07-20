@@ -421,13 +421,36 @@
                                 </span>
                                 @endif
                             </td>
+                            @if(session('success'))
+                            <div class="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+                                {{ session('success') }}
+                            </div>
+                            @endif
 
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                            @if(session('error'))
+                            <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+                                {{ session('error') }}
+                            </div>
+                            @endif
+                            <div class="flex flex-wrap items-center gap-2">
                                 <a href="{{ route('orientador.students.show', $student) }}"
-                                    class="inline-flex items-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800">
-                                    Ver detalle
+                                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                                    Ver detalles
                                 </a>
-                            </td>
+
+                                <form
+                                    action="{{ route('orientador.students.destroy', $student) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('¿Eliminar definitivamente este estudiante? También se eliminarán sus conversaciones, mensajes e informes. Esta acción no se puede deshacer.');">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit"
+                                        class="inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-red-700">
+                                        Eliminar registro
+                                    </button>
+                                </form>
+                            </div>
                         </tr>
                         @empty
                         <tr>
