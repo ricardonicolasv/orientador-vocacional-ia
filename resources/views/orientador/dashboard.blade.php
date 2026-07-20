@@ -77,6 +77,17 @@
                 </ul>
             </div>
             @endif
+            @if(session('success'))
+            <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+                {{ session('error') }}
+            </div>
+            @endif
             {{-- Tarjetas principales --}}
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl p-6 border border-gray-100">
@@ -421,36 +432,29 @@
                                 </span>
                                 @endif
                             </td>
-                            @if(session('success'))
-                            <div class="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-                                {{ session('success') }}
-                            </div>
-                            @endif
 
-                            @if(session('error'))
-                            <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
-                                {{ session('error') }}
-                            </div>
-                            @endif
-                            <div class="flex flex-wrap items-center gap-2">
-                                <a href="{{ route('orientador.students.show', $student) }}"
-                                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
-                                    Ver detalles
-                                </a>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('orientador.students.show', $student) }}"
+                                        class="inline-flex min-w-[105px] items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:border-green-300 hover:bg-green-50 hover:text-green-800">
+                                        Ver detalles
+                                    </a>
 
-                                <form
-                                    action="{{ route('orientador.students.destroy', $student) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('¿Eliminar definitivamente este estudiante? También se eliminarán sus conversaciones, mensajes e informes. Esta acción no se puede deshacer.');">
-                                    @csrf
-                                    @method('DELETE')
+                                    <form
+                                        action="{{ route('orientador.students.destroy', $student) }}"
+                                        method="POST"
+                                        class="inline-flex"
+                                        onsubmit="return confirm('¿Eliminar definitivamente este estudiante? También se eliminarán sus conversaciones, mensajes e informes. Esta acción no se puede deshacer.');">
+                                        @csrf
+                                        @method('DELETE')
 
-                                    <button type="submit"
-                                        class="inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-red-700">
-                                        Eliminar registro
-                                    </button>
-                                </form>
-                            </div>
+                                        <button type="submit"
+                                            class="inline-flex min-w-[120px] items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 shadow-sm transition hover:border-red-600 hover:bg-red-600 hover:text-white">
+                                            Eliminar registro
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                         @empty
                         <tr>
